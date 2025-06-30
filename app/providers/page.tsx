@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, MapPin, Star, Filter, Phone, Calendar, Stethoscope } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -103,6 +103,9 @@ export default function ProvidersPage() {
   const [selectedInsurance, setSelectedInsurance] = useState("")
   const [filteredProviders, setFilteredProviders] = useState(providers)
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
+  const [clinics, setClinics] = useState<any[]>([])
+  const [loadingClinics, setLoadingClinics] = useState(false)
+  const [locationError, setLocationError] = useState("")
 
   const specialties = [
     "Family Medicine",
@@ -114,6 +117,43 @@ export default function ProvidersPage() {
     "Neurology",
     "Oncology",
   ]
+
+  // Fetch clinics from OpenStreetMap Overpass API
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser.")
+      return
+    }
+    setLoadingClinics(true)
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
+        const radius = 5000 // meters
+        const query = `
+          [out:json];
+          node["amenity"="clinic"](around:${radius},${latitude},${longitude});
+          out;
+        `
+        try {
+          const response = await fetch("https://overpass-api.de/api/interpreter", {
+            method: "POST",
+            body: query,
+            headers: { "Content-Type": "text/plain" },
+          })
+          const data = await response.json()
+          setClinics(data.elements || [])
+        } catch (e) {
+          setLocationError("Failed to fetch clinics from OpenStreetMap.")
+        } finally {
+          setLoadingClinics(false)
+        }
+      },
+      (error) => {
+        setLocationError("Unable to retrieve your location.")
+        setLoadingClinics(false)
+      }
+    )
+  }, [])
 
   const handleSearch = () => {
     let filtered = providers
@@ -152,6 +192,11 @@ export default function ProvidersPage() {
       />
     ))
   }
+
+  // Filter clinics by name using the search term (case-insensitive)
+  const filteredClinics = clinics.filter(clinic =>
+    (clinic.tags?.name || 'Unnamed Clinic').toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -231,127 +276,179 @@ export default function ProvidersPage() {
         </Card>
 
         {/* Results */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredProviders.map((provider) => (
-            <Card key={provider.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <img
-                    src={provider.image || "/placeholder.svg"}
-                    alt={provider.name}
-                    className="w-20 h-20 rounded-full object-cover"
-                  />
-
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="text-lg font-semibold">{provider.name}</h3>
-                        <p className="text-gray-600">{provider.specialty}</p>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center gap-1 mb-1">
-                          {renderStars(provider.rating)}
-                          <span className="text-sm font-medium ml-1">{provider.rating}</span>
-                        </div>
-                        <p className="text-xs text-gray-500">({provider.reviewCount} reviews)</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin className="w-4 h-4" />
-                        <span>
-                          {provider.distance} • {provider.address}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Phone className="w-4 h-4" />
-                        <span>{provider.phone}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4" />
-                        <span>Next available: {provider.nextAvailable}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 mb-4">
-                      {provider.acceptsInsurance && (
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          Accepts Insurance
-                        </Badge>
-                      )}
-                      {provider.languages.map((language) => (
-                        <Badge key={language} variant="outline" className="text-xs">
-                          {language}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" onClick={() => setSelectedProvider(provider)}>
-                            View Profile
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
-                          <DialogHeader>
-                            <DialogTitle className="flex items-center gap-3">
-                              <img
-                                src={provider.image || "/placeholder.svg"}
-                                alt={provider.name}
-                                className="w-12 h-12 rounded-full"
-                              />
-                              <div>
-                                <div>{provider.name}</div>
-                                <div className="text-sm font-normal text-gray-600">{provider.specialty}</div>
-                              </div>
-                            </DialogTitle>
-                          </DialogHeader>
-
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <h4 className="font-semibold mb-2">Education</h4>
-                                <p className="text-sm text-gray-600">{provider.education}</p>
-                              </div>
-                              <div>
-                                <h4 className="font-semibold mb-2">Experience</h4>
-                                <p className="text-sm text-gray-600">{provider.experience}</p>
-                              </div>
-                            </div>
-
-                            <div>
-                              <h4 className="font-semibold mb-2">Languages</h4>
-                              <div className="flex gap-2">
-                                {provider.languages.map((language) => (
-                                  <Badge key={language} variant="outline">
-                                    {language}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-
-                            <div>
-                              <h4 className="font-semibold mb-2">Contact Information</h4>
-                              <p className="text-sm text-gray-600 mb-1">{provider.address}</p>
-                              <p className="text-sm text-gray-600">{provider.phone}</p>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-
-                      <Button size="sm" onClick={() => handleBookAppointment(provider)}>
-                        <Calendar className="w-4 h-4 mr-2" />
-                        Book Appointment
-                      </Button>
+        {loadingClinics ? (
+          <div className="text-center py-10 text-gray-500">Loading nearby clinics...</div>
+        ) : clinics.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredClinics.map((clinic) => (
+              <Card key={clinic.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                    <Stethoscope className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">
+                      {clinic.tags?.name || "Unnamed Clinic"}
+                    </CardTitle>
+                    <div className="text-xs text-gray-500">
+                      {clinic.tags?.address || clinic.tags?.['addr:full'] || clinic.tags?.['addr:street'] || "Address not available"}
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <span>
+                        Lat: {clinic.lat.toFixed(4)}, Lon: {clinic.lon.toFixed(4)}
+                      </span>
+                    </div>
+                    {clinic.tags?.phone && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <span>{clinic.tags.phone}</span>
+                      </div>
+                    )}
+                    {clinic.tags?.website && (
+                      <a
+                        href={clinic.tags.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline text-sm"
+                      >
+                        Website
+                      </a>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : locationError ? (
+          <div className="text-center py-10 text-red-500">{locationError}</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProviders.map((provider) => (
+              <Card key={provider.id} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={provider.image || "/placeholder.svg"}
+                      alt={provider.name}
+                      className="w-20 h-20 rounded-full object-cover"
+                    />
+
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="text-lg font-semibold">{provider.name}</h3>
+                          <p className="text-gray-600">{provider.specialty}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1 mb-1">
+                            {renderStars(provider.rating)}
+                            <span className="text-sm font-medium ml-1">{provider.rating}</span>
+                          </div>
+                          <p className="text-xs text-gray-500">({provider.reviewCount} reviews)</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <MapPin className="w-4 h-4" />
+                          <span>
+                            {provider.distance} • {provider.address}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Phone className="w-4 h-4" />
+                          <span>{provider.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Calendar className="w-4 h-4" />
+                          <span>Next available: {provider.nextAvailable}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 mb-4">
+                        {provider.acceptsInsurance && (
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                            Accepts Insurance
+                          </Badge>
+                        )}
+                        {provider.languages.map((language) => (
+                          <Badge key={language} variant="outline" className="text-xs">
+                            {language}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={() => setSelectedProvider(provider)}>
+                              View Profile
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle className="flex items-center gap-3">
+                                <img
+                                  src={provider.image || "/placeholder.svg"}
+                                  alt={provider.name}
+                                  className="w-12 h-12 rounded-full"
+                                />
+                                <div>
+                                  <div>{provider.name}</div>
+                                  <div className="text-sm font-normal text-gray-600">{provider.specialty}</div>
+                                </div>
+                              </DialogTitle>
+                            </DialogHeader>
+
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <h4 className="font-semibold mb-2">Education</h4>
+                                  <p className="text-sm text-gray-600">{provider.education}</p>
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold mb-2">Experience</h4>
+                                  <p className="text-sm text-gray-600">{provider.experience}</p>
+                                </div>
+                              </div>
+
+                              <div>
+                                <h4 className="font-semibold mb-2">Languages</h4>
+                                <div className="flex gap-2">
+                                  {provider.languages.map((language) => (
+                                    <Badge key={language} variant="outline">
+                                      {language}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div>
+                                <h4 className="font-semibold mb-2">Contact Information</h4>
+                                <p className="text-sm text-gray-600 mb-1">{provider.address}</p>
+                                <p className="text-sm text-gray-600">{provider.phone}</p>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+
+                        <Button size="sm" onClick={() => handleBookAppointment(provider)}>
+                          <Calendar className="w-4 h-4 mr-2" />
+                          Book Appointment
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {filteredProviders.length === 0 && (
           <Card>
