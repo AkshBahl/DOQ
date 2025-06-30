@@ -160,40 +160,63 @@ export default function ChatPage() {
                 {/* Messages */}
                 <ScrollArea className="flex-1 px-6" ref={scrollAreaRef}>
                   <div className="space-y-4 pb-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex gap-3 ${message.type === "user" ? "justify-end" : "justify-start"}`}
-                      >
-                        {message.type === "ai" && (
-                          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                            <Bot className="w-4 h-4 text-white" />
-                          </div>
-                        )}
+                    {messages.map((message) => {
+                      // Detect error/fallback AI message
+                      const isError =
+                        message.type === "ai" &&
+                        message.content.startsWith("I apologize, but I'm unable to process your request")
 
+                      return (
                         <div
-                          className={`max-w-[80%] rounded-lg p-3 ${
-                            message.type === "user" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"
+                          key={message.id}
+                          className={`flex gap-3 mb-2 ${
+                            message.type === "user" ? "justify-end" : "justify-start"
                           }`}
                         >
-                          <p className="text-sm">{message.content}</p>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-xs opacity-70">{message.timestamp.toLocaleTimeString()}</span>
-                            {message.type === "ai" && message.confidence && (
-                              <Badge variant="secondary" className="text-xs">
-                                {message.confidence}% confidence
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
+                          {/* AI Icon (left) */}
+                          {message.type === "ai" && (
+                            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mt-auto">
+                              {isError ? (
+                                <AlertCircle className="w-4 h-4 text-white" />
+                              ) : (
+                                <Bot className="w-4 h-4 text-white" />
+                              )}
+                            </div>
+                          )}
 
-                        {message.type === "user" && (
-                          <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-white" />
+                          {/* Message Bubble */}
+                          <div
+                            className={`max-w-[80%] rounded-lg p-3 shadow-sm relative ${
+                              message.type === "user"
+                                ? "bg-blue-600 text-white text-right"
+                                : isError
+                                ? "bg-red-100 text-red-800 border border-red-300"
+                                : "bg-gray-100 text-gray-900"
+                            }`}
+                          >
+                            <p className="text-sm whitespace-pre-line">{message.content}</p>
+                            <div className={`flex items-center gap-2 mt-2 ${message.type === "user" ? "justify-end" : "justify-start"}`}>
+                              <span className="text-xs opacity-60 block">
+                                {message.timestamp.toLocaleTimeString()}
+                              </span>
+                              {/* Confidence badge only for valid AI responses */}
+                              {message.type === "ai" && message.confidence && !isError && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {message.confidence}% confidence
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    ))}
+
+                          {/* User Icon (right) */}
+                          {message.type === "user" && (
+                            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mt-auto">
+                              <User className="w-4 h-4 text-white" />
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
 
                     {/* Typing Indicator */}
                     {isTyping && (
