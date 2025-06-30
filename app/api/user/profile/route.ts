@@ -1,5 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
+
+function safeParseArray(val: any) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  try {
+    const parsed = JSON.parse(val);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    return typeof val === 'string' ? [val] : [];
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,9 +57,10 @@ export async function POST(request: NextRequest) {
     if (profileData.allergies || profileData.current_medications || profileData.medical_conditions) {
       const healthProfileData = {
         user_id: userId,
-        allergies: profileData.allergies ? JSON.parse(profileData.allergies) : [],
-        medications: profileData.current_medications ? JSON.parse(profileData.current_medications) : [],
-        conditions: profileData.medical_conditions ? JSON.parse(profileData.medical_conditions) : [],
+        allergies: safeParseArray(profileData.allergies),
+        medications: safeParseArray(profileData.current_medications),
+        conditions: safeParseArray(profileData.medical_conditions),
+        health_goals: profileData.health_goals || '',
       }
 
       const { error: healthError } = await supabase

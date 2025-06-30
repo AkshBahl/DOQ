@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress"
 import { useAuth } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { supabase } from '@/lib/supabase'
 
 interface SignupData {
   // Step 1: Basic Information
@@ -148,7 +149,7 @@ export default function SignupPage() {
       }
 
       if (data.user) {
-        // Then create the user profile in our database
+        // Call API route to create user profile with all details using service role key
         const profileResponse = await fetch('/api/user/profile', {
           method: 'POST',
           headers: {
@@ -177,7 +178,9 @@ export default function SignupPage() {
         })
 
         if (!profileResponse.ok) {
-          console.error('Profile creation failed')
+          const errorData = await profileResponse.json().catch(() => ({}))
+          setError(`Profile creation failed: ${errorData.error || 'Unknown error'}`)
+          return
         }
 
         // Redirect to dashboard

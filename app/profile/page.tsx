@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { User, Save, Calendar, Mail, Phone, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,24 +12,103 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import Navigation from "@/components/navigation"
+import { useAuth } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 
 export default function ProfilePage() {
   const { toast } = useToast()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
+  const [profileLoading, setProfileLoading] = useState(true)
   const [profile, setProfile] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@email.com",
-    phone: "+1 (555) 123-4567",
-    dateOfBirth: "1990-01-15",
-    gender: "male",
-    address: "123 Main St, City, State 12345",
-    emergencyContact: "Jane Doe - +1 (555) 987-6543",
-    allergies: "Penicillin, Shellfish",
-    medications: "Lisinopril 10mg daily",
-    medicalConditions: "Hypertension",
-    healthGoals: "Maintain healthy blood pressure, lose 10 pounds",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    dateOfBirth: "",
+    gender: "",
+    address: "",
+    emergencyContact: "",
+    allergies: "",
+    medications: "",
+    medicalConditions: "",
+    healthGoals: "",
   })
+
+  // Fetch user and health profile data when component mounts
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user?.id) {
+        console.log('No user ID available, skipping profile fetch')
+        setProfileLoading(false)
+        return
+      }
+
+      try {
+        setProfileLoading(true)
+        console.log('Fetching profile for user ID:', user.id)
+        // Fetch user data
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+        // Fetch health profile data
+        const { data: healthData, error: healthError } = await supabase
+          .from('health_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+        if (userError) {
+          console.error('Error fetching user profile:', userError)
+          toast({
+            title: "Error",
+            description: `Failed to load profile data: ${userError.message}`,
+            variant: "destructive",
+          })
+        } else {
+          setProfile((prev) => ({
+            ...prev,
+            firstName: userData.first_name || "",
+            lastName: userData.last_name || "",
+            email: userData.email || "",
+            phone: userData.phone || "",
+            dateOfBirth: userData.date_of_birth || "",
+            gender: userData.gender || "",
+            address: userData.address || "",
+            emergencyContact: userData.emergency_contact || "",
+          }))
+        }
+        // Only log health profile error if it's not a 'no rows' error
+        if (healthError && healthError.code !== 'PGRST116' && !/no rows returned/i.test(healthError.message || '')) {
+          console.error('Error fetching health profile:', healthError)
+        } else if (healthData) {
+          setProfile((prev) => ({
+            ...prev,
+            allergies: Array.isArray(healthData.allergies) ? healthData.allergies.join(", ") : healthData.allergies || "",
+            medications: Array.isArray(healthData.medications) ? healthData.medications.join(", ") : healthData.medications || "",
+            medicalConditions: Array.isArray(healthData.conditions) ? healthData.conditions.join(", ") : healthData.conditions || "",
+            healthGoals: healthData.health_goals || "",
+          }))
+        }
+      } catch (error) {
+        console.error('Exception fetching user profile:', error)
+        toast({
+          title: "Error",
+          description: "Failed to load profile data. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setProfileLoading(false)
+      }
+    }
+
+    if (user?.id) {
+      fetchUserProfile()
+    } else {
+      setProfileLoading(false)
+    }
+  }, [user?.id, toast])
 
   const handleInputChange = (field: string, value: string) => {
     setProfile((prev) => ({ ...prev, [field]: value }))
@@ -39,14 +118,71 @@ export default function ProfilePage() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Update users table
+      const { error: userError } = await supabase
+        .from('users')
+        .update({
+          first_name: profile.firstName,
+          last_name: profile.lastName,
+          phone: profile.phone,
+          date_of_birth: profile.dateOfBirth,
+          gender: profile.gender,
+          address: profile.address,
+          emergency_contact: profile.emergencyContact,
+        })
+        .eq('id', user?.id)
+
+      // Upsert health profile
+      const { error: healthError } = await supabase
+        .from('health_profiles')
+        .upsert({
+          user_id: user?.id,
+          allergies: profile.allergies ? profile.allergies.split(/,\s*/) : [],
+          medications: profile.medications ? profile.medications.split(/,\s*/) : [],
+          conditions: profile.medicalConditions ? profile.medicalConditions.split(/,\s*/) : [],
+          health_goals: profile.healthGoals,
+        }, { onConflict: 'user_id' })
+
+      if (userError || healthError) {
+        console.error('Error updating profile:', userError, healthError)
+        if (userError) console.error('User update error details:', userError)
+        if (healthError) console.error('Health profile update error details:', healthError)
+        toast({
+          title: "Error",
+          description: `Failed to update profile. ${userError?.message || ''} ${healthError?.message || ''}`,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Profile Updated",
+          description: "Your profile has been successfully updated.",
+        })
+      }
+    } catch (error) {
+      console.error('Exception updating profile:', error)
       toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
       })
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
+  }
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading profile...</p>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -103,6 +239,7 @@ export default function ProfilePage() {
                       value={profile.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
                       required
+                      disabled
                     />
                   </div>
                 </div>
@@ -199,7 +336,7 @@ export default function ProfilePage() {
                 <Label htmlFor="medications">Current Medications</Label>
                 <Textarea
                   id="medications"
-                  placeholder="List current medications with dosages"
+                  placeholder="List your current medications and dosages"
                   value={profile.medications}
                   onChange={(e) => handleInputChange("medications", e.target.value)}
                   rows={3}
@@ -210,7 +347,7 @@ export default function ProfilePage() {
                 <Label htmlFor="medicalConditions">Medical Conditions</Label>
                 <Textarea
                   id="medicalConditions"
-                  placeholder="List any chronic conditions or ongoing health issues"
+                  placeholder="List any medical conditions or diagnoses"
                   value={profile.medicalConditions}
                   onChange={(e) => handleInputChange("medicalConditions", e.target.value)}
                   rows={3}
@@ -232,9 +369,12 @@ export default function ProfilePage() {
 
           {/* Save Button */}
           <div className="flex justify-end">
-            <Button type="submit" disabled={isLoading} className="min-w-32">
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? (
-                "Saving..."
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Saving...
+                </>
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
