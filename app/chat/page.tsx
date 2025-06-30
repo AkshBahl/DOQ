@@ -132,197 +132,116 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navigation />
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Bot className="w-8 h-8" />
-            AI Health Chat
-          </h1>
-          <p className="text-gray-600 mt-2">Get instant answers to your health questions from our AI assistant</p>
+      {/* Compact header bar */}
+      <header className="w-full border-b border-gray-100 bg-white py-1 px-4 flex flex-col items-center">
+        <div className="flex items-center gap-2 mt-1">
+          <Bot className="w-6 h-6" />
+          <span className="text-lg font-semibold text-gray-900">AI Health Chat</span>
         </div>
+        <span className="text-xs text-gray-500 mt-0.5 mb-1">Get instant answers to your health questions from our AI assistant</span>
+      </header>
+      {/* ChatGPT-style fixed chat panel */}
+      <div className="flex-1 flex flex-col justify-end">
+        <div className="fixed inset-x-0 bottom-0 z-50 bg-white border-t border-gray-200 shadow-lg">
+          <div className="max-w-2xl mx-auto w-full flex flex-col h-[80vh]">
+            {/* Messages Scroll Area */}
+            <div className="flex-1 overflow-y-auto px-4 py-6" ref={scrollAreaRef} style={{scrollBehavior: 'smooth'}}>
+              <div className="space-y-4 pb-4">
+                {messages.map((message) => {
+                  // Detect error/fallback AI message
+                  const isError =
+                    message.type === "ai" &&
+                    message.content.startsWith("I apologize, but I'm unable to process your request")
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Chat Interface */}
-          <div className="lg:col-span-3">
-            <Card className="h-[600px] flex flex-col">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2">
-                  <Bot className="w-5 h-5" />
-                  AI Doctor Assistant
-                </CardTitle>
-                <CardDescription>Ask questions about symptoms, medications, and health topics</CardDescription>
-              </CardHeader>
-
-              <CardContent className="flex-1 flex flex-col p-0">
-                {/* Messages */}
-                <ScrollArea className="flex-1 px-6" ref={scrollAreaRef}>
-                  <div className="space-y-4 pb-4">
-                    {messages.map((message) => {
-                      // Detect error/fallback AI message
-                      const isError =
-                        message.type === "ai" &&
-                        message.content.startsWith("I apologize, but I'm unable to process your request")
-
-                      return (
-                        <div
-                          key={message.id}
-                          className={`flex gap-3 mb-2 ${
-                            message.type === "user" ? "justify-end" : "justify-start"
-                          }`}
-                        >
-                          {/* AI Icon (left) */}
-                          {message.type === "ai" && (
-                            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mt-auto">
-                              {isError ? (
-                                <AlertCircle className="w-4 h-4 text-white" />
-                              ) : (
-                                <Bot className="w-4 h-4 text-white" />
-                              )}
-                            </div>
-                          )}
-
-                          {/* Message Bubble */}
-                          <div
-                            className={`max-w-[80%] rounded-lg p-3 shadow-sm relative ${
-                              message.type === "user"
-                                ? "bg-blue-600 text-white text-right"
-                                : isError
-                                ? "bg-red-100 text-red-800 border border-red-300"
-                                : "bg-gray-100 text-gray-900"
-                            }`}
-                          >
-                            <p className="text-sm whitespace-pre-line">{message.content}</p>
-                            <div className={`flex items-center gap-2 mt-2 ${message.type === "user" ? "justify-end" : "justify-start"}`}>
-                              <span className="text-xs opacity-60 block">
-                                {message.timestamp.toLocaleTimeString()}
-                              </span>
-                              {/* Confidence badge only for valid AI responses */}
-                              {message.type === "ai" && message.confidence && !isError && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {message.confidence}% confidence
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* User Icon (right) */}
-                          {message.type === "user" && (
-                            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mt-auto">
-                              <User className="w-4 h-4 text-white" />
-                            </div>
+                  return (
+                    <div
+                      key={message.id}
+                      className={`flex gap-3 mb-2 ${
+                        message.type === "user" ? "justify-end" : "justify-start"
+                      }`}
+                    >
+                      {/* AI Icon (left) */}
+                      {message.type === "ai" && (
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mt-auto">
+                          {isError ? (
+                            <AlertCircle className="w-4 h-4 text-white" />
+                          ) : (
+                            <Bot className="w-4 h-4 text-white" />
                           )}
                         </div>
-                      )
-                    })}
+                      )}
 
-                    {/* Typing Indicator */}
-                    {isTyping && (
-                      <div className="flex gap-3 justify-start">
-                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                          <Bot className="w-4 h-4 text-white" />
-                        </div>
-                        <div className="bg-gray-100 rounded-lg p-3">
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                            <div
-                              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                              style={{ animationDelay: "0.1s" }}
-                            ></div>
-                            <div
-                              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                              style={{ animationDelay: "0.2s" }}
-                            ></div>
-                          </div>
+                      {/* Message Bubble */}
+                      <div
+                        className={`max-w-[80%] rounded-lg p-3 shadow-sm relative ${
+                          message.type === "user"
+                            ? "bg-blue-600 text-white text-right"
+                            : isError
+                            ? "bg-red-100 text-red-800 border border-red-300"
+                            : "bg-gray-100 text-gray-900"
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-line">{message.content}</p>
+                        <div className={`flex items-center gap-2 mt-2 ${message.type === "user" ? "justify-end" : "justify-start"}`}>
+                          <span className="text-xs opacity-60 block">
+                            {message.timestamp.toLocaleTimeString()}
+                          </span>
+                          {/* Confidence badge only for valid AI responses */}
+                          {message.type === "ai" && message.confidence && !isError && (
+                            <Badge variant="secondary" className="text-xs">
+                              {message.confidence}% confidence
+                            </Badge>
+                          )}
                         </div>
                       </div>
-                    )}
+
+                      {/* User Icon (right) */}
+                      {message.type === "user" && (
+                        <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mt-auto">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+                {/* Typing Indicator */}
+                {isTyping && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                      <Bot className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="max-w-[80%] rounded-lg p-3 bg-gray-100 text-gray-900">
+                      <span className="text-sm opacity-70">AI is typing...</span>
+                    </div>
                   </div>
-                </ScrollArea>
-
-                {/* Input */}
-                <div className="border-t p-4">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Ask about symptoms, medications, or health concerns..."
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      disabled={isTyping}
-                    />
-                    <Button onClick={handleSendMessage} disabled={!inputMessage.trim() || isTyping}>
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Quick Topics */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Topics</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {[
-                  "Common cold symptoms",
-                  "Medication interactions",
-                  "Fever management",
-                  "Headache causes",
-                  "Allergic reactions",
-                  "First aid basics",
-                ].map((topic, index) => (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start text-left h-auto p-2"
-                    onClick={() => setInputMessage(topic)}
-                  >
-                    {topic}
-                  </Button>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Disclaimer */}
-            <Card className="border-yellow-200 bg-yellow-50">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-yellow-900 text-sm mb-1">Medical Disclaimer</h4>
-                    <p className="text-xs text-yellow-800">
-                      This AI assistant provides general health information only. Always consult healthcare
-                      professionals for medical advice, diagnosis, or treatment.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Emergency */}
-            <Card className="border-red-200 bg-red-50">
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <h4 className="font-semibold text-red-900 mb-2">Emergency?</h4>
-                  <p className="text-sm text-red-800 mb-3">
-                    For medical emergencies, call emergency services immediately.
-                  </p>
-                  <Button variant="destructive" size="sm" className="w-full">
-                    Call 911
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                )}
+              </div>
+            </div>
+            {/* Input Area */}
+            <form
+              className="flex items-center gap-2 border-t border-gray-100 bg-white px-4 py-3"
+              onSubmit={e => {
+                e.preventDefault();
+                handleSendMessage();
+              }}
+            >
+              <Input
+                className="flex-1 rounded-full bg-gray-50 border border-gray-200 focus:border-blue-400 focus:ring-0"
+                placeholder="Ask about symptoms, medications, or health concerns..."
+                value={inputMessage}
+                onChange={e => setInputMessage(e.target.value)}
+                onKeyDown={handleKeyPress}
+                autoFocus
+              />
+              <Button type="submit" className="rounded-full px-4" disabled={!inputMessage.trim() || isTyping}>
+                <Send className="w-5 h-5" />
+              </Button>
+            </form>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 }

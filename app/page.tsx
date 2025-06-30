@@ -119,10 +119,6 @@ export default function LoginPage() {
                 </div>
               </div>
             </form>
-
-            <div className="mt-6 pt-6 border-t">
-              <p className="text-xs text-gray-500 text-center">Demo credentials: demo@doq.com / demo123</p>
-            </div>
           </CardContent>
         </Card>
 
