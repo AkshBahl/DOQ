@@ -1,14 +1,11 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
 import { Send, Bot, User, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import Navigation from "@/components/navigation"
 import { useAuth } from "@/lib/auth"
 
@@ -33,20 +30,11 @@ export default function ChatPage() {
   ])
   const [inputMessage, setInputMessage] = useState("")
   const [isTyping, setIsTyping] = useState(false)
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const endOfMessagesRef = useRef<HTMLDivElement | null>(null)
   const { user } = useAuth()
 
-  const scrollToBottom = () => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector("[data-radix-scroll-area-viewport]")
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight
-      }
-    }
-  }
-
   useEffect(() => {
-    scrollToBottom()
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, isTyping])
 
   const handleSendMessage = async () => {
@@ -66,21 +54,13 @@ export default function ChatPage() {
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: inputMessage,
-          userId: user?.id,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: inputMessage, userId: user?.id }),
       })
 
-      if (!response.ok) {
-        throw new Error('Chat failed')
-      }
-
+      if (!response.ok) throw new Error('Chat failed')
       const data = await response.json()
-      
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: "ai",
@@ -90,13 +70,11 @@ export default function ChatPage() {
       }
 
       setMessages((prev) => [...prev, aiResponse])
-    } catch (error) {
-      console.error('Chat error:', error)
-      // Fallback response if API fails
+    } catch {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: "ai",
-        content: "I apologize, but I'm unable to process your request at the moment. Please try again or consult with a healthcare provider for immediate concerns.",
+        content: "I apologize, but I'm unable to process your request at the moment. Please try again or consult a healthcare provider.",
         timestamp: new Date(),
         confidence: 50,
       }
@@ -104,24 +82,6 @@ export default function ChatPage() {
     } finally {
       setIsTyping(false)
     }
-  }
-
-  const generateAIResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase()
-
-    if (input.includes("headache") || input.includes("head pain")) {
-      return "Headaches can have various causes including tension, dehydration, stress, or underlying conditions. For mild headaches, try resting in a quiet, dark room, staying hydrated, and applying a cold or warm compress. If headaches are severe, frequent, or accompanied by other symptoms like fever, vision changes, or neck stiffness, please consult a healthcare provider immediately."
-    }
-
-    if (input.includes("fever") || input.includes("temperature")) {
-      return "A fever is typically defined as a body temperature above 100.4°F (38°C). It's often a sign that your body is fighting an infection. Stay hydrated, rest, and monitor your temperature. Seek medical attention if fever exceeds 103°F (39.4°C), persists for more than 3 days, or is accompanied by severe symptoms like difficulty breathing, chest pain, or severe headache."
-    }
-
-    if (input.includes("medication") || input.includes("drug")) {
-      return "I can provide general information about medications, but I cannot prescribe or recommend specific dosages. Always consult with your healthcare provider or pharmacist before starting, stopping, or changing any medications. They can review your medical history, current medications, and potential interactions to ensure your safety."
-    }
-
-    return "Thank you for your question. While I can provide general health information, it's important to remember that I cannot replace professional medical advice. For specific symptoms or concerns, especially if they're severe or persistent, please consult with a qualified healthcare provider who can properly evaluate your condition and provide personalized treatment recommendations."
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -134,114 +94,169 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navigation />
-      {/* Compact header bar */}
-      <header className="w-full border-b border-gray-100 bg-white py-1 px-4 flex flex-col items-center">
-        <div className="flex items-center gap-2 mt-1">
-          <Bot className="w-6 h-6" />
-          <span className="text-lg font-semibold text-gray-900">AI Health Chat</span>
-        </div>
-        <span className="text-xs text-gray-500 mt-0.5 mb-1">Get instant answers to your health questions from our AI assistant</span>
-      </header>
-      {/* ChatGPT-style fixed chat panel */}
-      <div className="flex-1 flex flex-col justify-end">
-        <div className="fixed inset-x-0 bottom-0 z-50 bg-white border-t border-gray-200 shadow-lg">
-          <div className="max-w-2xl mx-auto w-full flex flex-col h-[80vh]">
-            {/* Messages Scroll Area */}
-            <div className="flex-1 overflow-y-auto px-4 py-6" ref={scrollAreaRef} style={{scrollBehavior: 'smooth'}}>
-              <div className="space-y-4 pb-4">
-                {messages.map((message) => {
-                  // Detect error/fallback AI message
-                  const isError =
-                    message.type === "ai" &&
-                    message.content.startsWith("I apologize, but I'm unable to process your request")
 
-                  return (
+      <main className="flex-1 flex justify-center items-start py-4 px-2">
+        <div className="flex w-full max-w-7xl bg-white rounded-lg shadow-lg overflow-hidden h-[calc(100vh-4rem)]">
+          {/* Chat Section */}
+          <div className="flex-1 flex flex-col border-r">
+            {/* Header */}
+            <CardHeader className="px-6 py-4 border-b">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Bot className="w-5 h-5" />
+                AI Doctor Assistant
+              </CardTitle>
+              <CardDescription>
+                Ask questions about symptoms, medications, and health topics
+              </CardDescription>
+            </CardHeader>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              {messages.map((message) => {
+                const isError = message.type === "ai" && message.content.startsWith("I apologize")
+
+                return (
+                  <div
+                    key={message.id}
+                    className={`flex gap-3 ${message.type === "user" ? "justify-end" : "justify-start"} mb-2`}
+                  >
+                    {/* Left icon for AI */}
+                    {message.type === "ai" && (
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mt-auto">
+                        {isError ? <AlertCircle className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-white" />}
+                      </div>
+                    )}
+
+                    {/* Message bubble */}
                     <div
-                      key={message.id}
-                      className={`flex gap-3 mb-2 ${
-                        message.type === "user" ? "justify-end" : "justify-start"
+                      className={`max-w-[80%] rounded-lg p-3 shadow-sm ${
+                        message.type === "user"
+                          ? "bg-blue-600 text-white text-right"
+                          : isError
+                          ? "bg-red-100 text-red-800 border border-red-300"
+                          : "bg-gray-100 text-gray-900"
                       }`}
                     >
-                      {/* AI Icon (left) */}
-                      {message.type === "ai" && (
-                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mt-auto">
-                          {isError ? (
-                            <AlertCircle className="w-4 h-4 text-white" />
-                          ) : (
-                            <Bot className="w-4 h-4 text-white" />
-                          )}
-                        </div>
-                      )}
-
-                      {/* Message Bubble */}
+                      <p className="text-sm whitespace-pre-line">{message.content}</p>
                       <div
-                        className={`max-w-[80%] rounded-lg p-3 shadow-sm relative ${
-                          message.type === "user"
-                            ? "bg-blue-600 text-white text-right"
-                            : isError
-                            ? "bg-red-100 text-red-800 border border-red-300"
-                            : "bg-gray-100 text-gray-900"
+                        className={`text-xs opacity-60 mt-2 flex gap-2 ${
+                          message.type === "user" ? "justify-end" : "justify-start"
                         }`}
                       >
-                        <p className="text-sm whitespace-pre-line">{message.content}</p>
-                        <div className={`flex items-center gap-2 mt-2 ${message.type === "user" ? "justify-end" : "justify-start"}`}>
-                          <span className="text-xs opacity-60 block">
-                            {message.timestamp.toLocaleTimeString()}
-                          </span>
-                          {/* Confidence badge only for valid AI responses */}
-                          {message.type === "ai" && message.confidence && !isError && (
-                            <Badge variant="secondary" className="text-xs">
-                              {message.confidence}% confidence
-                            </Badge>
-                          )}
-                        </div>
+                        <span>{message.timestamp.toLocaleTimeString()}</span>
+                        {message.type === "ai" && message.confidence && !isError && (
+                          <Badge variant="secondary">{message.confidence}% confidence</Badge>
+                        )}
                       </div>
+                    </div>
 
-                      {/* User Icon (right) */}
-                      {message.type === "user" && (
-                        <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mt-auto">
-                          <User className="w-4 h-4 text-white" />
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-                {/* Typing Indicator */}
-                {isTyping && (
-                  <div className="flex gap-3 justify-start">
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                      <Bot className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="max-w-[80%] rounded-lg p-3 bg-gray-100 text-gray-900">
-                      <span className="text-sm opacity-70">AI is typing...</span>
+                    {/* Right icon for User */}
+                    {message.type === "user" && (
+                      <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mt-auto">
+                        <User className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Typing indicator */}
+              {isTyping && (
+                <div className="flex gap-3 justify-start">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="bg-gray-100 rounded-lg p-3">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
                     </div>
                   </div>
-                )}
+                </div>
+              )}
+
+              {/* Scroll anchor */}
+              <div ref={endOfMessagesRef} />
+            </div>
+
+            {/* Input box */}
+            <div className="border-t p-4 bg-white">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Ask about symptoms, medications, or health concerns..."
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  disabled={isTyping}
+                />
+                <Button onClick={handleSendMessage} disabled={!inputMessage.trim() || isTyping}>
+                  <Send className="w-4 h-4" />
+                </Button>
               </div>
             </div>
-            {/* Input Area */}
-            <form
-              className="flex items-center gap-2 border-t border-gray-100 bg-white px-4 py-3"
-              onSubmit={e => {
-                e.preventDefault();
-                handleSendMessage();
-              }}
-            >
-              <Input
-                className="flex-1 rounded-full bg-gray-50 border border-gray-200 focus:border-blue-400 focus:ring-0"
-                placeholder="Ask about symptoms, medications, or health concerns..."
-                value={inputMessage}
-                onChange={e => setInputMessage(e.target.value)}
-                onKeyDown={handleKeyPress}
-                autoFocus
-              />
-              <Button type="submit" className="rounded-full px-4" disabled={!inputMessage.trim() || isTyping}>
-                <Send className="w-5 h-5" />
-              </Button>
-            </form>
+          </div>
+
+          {/* Sidebar Section */}
+          <div className="w-80 flex-shrink-0 overflow-y-auto bg-gray-50 p-4 space-y-6">
+            {/* Quick Topics */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Topics</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {[
+                  "Common cold symptoms",
+                  "Medication interactions",
+                  "Fever management",
+                  "Headache causes",
+                  "Allergic reactions",
+                  "First aid basics",
+                ].map((topic, index) => (
+                  <Button
+                    key={index}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-left h-auto p-2"
+                    onClick={() => setInputMessage(topic)}
+                  >
+                    {topic}
+                  </Button>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Disclaimer */}
+            <Card className="border-yellow-200 bg-yellow-50">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-yellow-900 text-sm mb-1">Medical Disclaimer</h4>
+                    <p className="text-xs text-yellow-800">
+                      This AI assistant provides general health information only. Always consult healthcare
+                      professionals for medical advice, diagnosis, or treatment.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Emergency */}
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="p-4 text-center">
+                <h4 className="font-semibold text-red-900 mb-2">Emergency?</h4>
+                <p className="text-sm text-red-800 mb-3">
+                  For medical emergencies, call emergency services immediately.
+                </p>
+                <Button variant="destructive" size="sm" className="w-full">
+                  Call 911
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
