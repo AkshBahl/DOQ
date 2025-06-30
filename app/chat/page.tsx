@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import Navigation from "@/components/navigation"
 import { useAuth } from "@/lib/auth"
 
+// AI Health Chat page - main chat interface for users to interact with the AI assistant
+
 interface Message {
   id: string
   type: "user" | "ai"
