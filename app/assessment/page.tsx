@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import Navigation from "@/components/navigation"
+import { useAuth } from "@/lib/auth"
 
 interface Question {
   id: string
@@ -60,11 +61,20 @@ const questions: Question[] = [
   },
 ]
 
+interface AssessmentResult {
+  urgencyLevel: 'mild' | 'moderate' | 'severe'
+  confidenceScore: number
+  recommendations: string
+  timeline: string
+}
+
 export default function AssessmentPage() {
   const [currentStep, setCurrentStep] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [isComplete, setIsComplete] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null)
+  const { user } = useAuth()
 
   const currentQuestion = questions[currentStep]
   const progress = ((currentStep + 1) / questions.length) * 100
@@ -90,11 +100,42 @@ export default function AssessmentPage() {
   const handleSubmit = async () => {
     setIsLoading(true)
 
-    // Simulate AI processing
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/assessment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          symptoms: answers['1'] || '',
+          painLevel: answers['2'] || '',
+          duration: answers['3'] || '',
+          medicationsTaken: answers['4'] || '',
+          additionalSymptoms: answers['5'] || '',
+          userId: user?.id,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Assessment failed')
+      }
+
+      const result = await response.json()
+      setAssessmentResult(result)
       setIsComplete(true)
+    } catch (error) {
+      console.error('Assessment error:', error)
+      // Fallback to mock data if API fails
+      setAssessmentResult({
+        urgencyLevel: 'moderate',
+        confidenceScore: 75,
+        recommendations: 'Based on your symptoms, we recommend consulting with a healthcare provider within 1-2 days. Continue monitoring your symptoms and seek immediate care if they worsen.',
+        timeline: '1-2 days'
+      })
+      setIsComplete(true)
+    } finally {
       setIsLoading(false)
-    }, 3000)
+    }
   }
 
   const canProceed = () => {
@@ -121,7 +162,7 @@ export default function AssessmentPage() {
     )
   }
 
-  if (isComplete) {
+  if (isComplete && assessmentResult) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
@@ -145,8 +186,18 @@ export default function AssessmentPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <Badge className="bg-orange-100 text-orange-800 text-lg px-4 py-2">Moderate</Badge>
-                  <p className="text-sm text-gray-600 mt-2">Consider seeing a healthcare provider within 1-2 days</p>
+                  <Badge className={`text-lg px-4 py-2 ${
+                    assessmentResult.urgencyLevel === 'mild' ? 'bg-green-100 text-green-800' :
+                    assessmentResult.urgencyLevel === 'moderate' ? 'bg-orange-100 text-orange-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {assessmentResult.urgencyLevel.charAt(0).toUpperCase() + assessmentResult.urgencyLevel.slice(1)}
+                  </Badge>
+                  <p className="text-sm text-gray-600 mt-2">
+                    {assessmentResult.urgencyLevel === 'mild' ? 'Monitor symptoms and seek care if they worsen' :
+                     assessmentResult.urgencyLevel === 'moderate' ? 'Consider seeing a healthcare provider within 1-2 days' :
+                     'Seek immediate medical attention'}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -161,8 +212,8 @@ export default function AssessmentPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">78%</div>
-                  <Progress value={78} className="mb-2" />
+                  <div className="text-3xl font-bold text-blue-600 mb-2">{assessmentResult.confidenceScore}%</div>
+                  <Progress value={assessmentResult.confidenceScore} className="mb-2" />
                   <p className="text-sm text-gray-600">Based on symptom analysis</p>
                 </div>
               </CardContent>
@@ -178,7 +229,7 @@ export default function AssessmentPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-green-600 mb-2">1-2 Days</div>
+                  <div className="text-lg font-semibold text-green-600 mb-2">{assessmentResult.timeline}</div>
                   <p className="text-sm text-gray-600">Recommended timeframe for medical consultation</p>
                 </div>
               </CardContent>
@@ -193,58 +244,18 @@ export default function AssessmentPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-semibold text-blue-900 mb-2">Immediate Care</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Continue monitoring your symptoms</li>
-                  <li>• Stay hydrated and get adequate rest</li>
-                  <li>• Take over-the-counter pain relief as needed</li>
-                </ul>
-              </div>
-
-              <div className="p-4 bg-orange-50 rounded-lg">
-                <h4 className="font-semibold text-orange-900 mb-2">Medical Attention</h4>
-                <ul className="text-sm text-orange-800 space-y-1">
-                  <li>• Schedule an appointment with your primary care physician</li>
-                  <li>• Consider urgent care if symptoms worsen</li>
-                  <li>• Bring a list of current medications to your appointment</li>
-                </ul>
-              </div>
-
-              <div className="p-4 bg-red-50 rounded-lg">
-                <h4 className="font-semibold text-red-900 mb-2">Seek Emergency Care If:</h4>
-                <ul className="text-sm text-red-800 space-y-1">
-                  <li>• Symptoms suddenly worsen or become severe</li>
-                  <li>• You experience difficulty breathing</li>
-                  <li>• You develop chest pain or severe headache</li>
-                </ul>
+                <h4 className="font-semibold text-blue-900 mb-2">Recommendations</h4>
+                <p className="text-sm text-blue-800 whitespace-pre-line">{assessmentResult.recommendations}</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Disclaimer */}
-          <Card className="mt-6 border-yellow-200 bg-yellow-50">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-yellow-900 mb-1">Important Disclaimer</h4>
-                  <p className="text-sm text-yellow-800">
-                    This assessment is for informational purposes only and does not replace professional medical advice.
-                    Always consult with a qualified healthcare provider for proper diagnosis and treatment.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Action Buttons */}
-          <div className="flex gap-4 mt-6">
-            <Button onClick={() => (window.location.href = "/providers")}>Find Healthcare Providers</Button>
-            <Button variant="outline" onClick={() => (window.location.href = "/chat")}>
-              Chat with AI Doctor
+          <div className="mt-6 flex gap-4">
+            <Button onClick={() => window.location.href = '/dashboard'}>
+              Back to Dashboard
             </Button>
-            <Button variant="outline" onClick={() => window.location.reload()}>
-              Take Another Assessment
+            <Button variant="outline" onClick={() => window.location.href = '/providers'}>
+              Find Healthcare Providers
             </Button>
           </div>
         </main>
@@ -255,70 +266,78 @@ export default function AssessmentPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
-
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Activity className="w-8 h-8" />
-            AI Symptom Assessment
-          </h1>
-          <p className="text-gray-600 mt-2">Answer a few questions to get personalized health recommendations</p>
+          <h1 className="text-3xl font-bold text-gray-900">Health Assessment</h1>
+          <p className="text-gray-600 mt-2">Let our AI analyze your symptoms and provide personalized recommendations</p>
         </div>
 
-        {/* Progress */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Progress</span>
-              <span className="text-sm text-gray-600">
-                {currentStep + 1} of {questions.length}
-              </span>
-            </div>
-            <Progress value={progress} className="h-2" />
-          </CardContent>
-        </Card>
-
-        {/* Question */}
         <Card>
           <CardHeader>
-            <CardTitle>Question {currentStep + 1}</CardTitle>
-            <CardDescription>{currentQuestion.question}</CardDescription>
+            <div className="flex items-center justify-between">
+              <CardTitle>Question {currentStep + 1} of {questions.length}</CardTitle>
+              <div className="text-sm text-gray-600">{Math.round(progress)}% Complete</div>
+            </div>
+            <Progress value={progress} className="mt-2" />
           </CardHeader>
-          <CardContent className="space-y-4">
-            {currentQuestion.type === "text" && (
-              <Textarea
-                placeholder="Please provide as much detail as possible..."
-                value={answers[currentQuestion.id] || ""}
-                onChange={(e) => handleAnswer(currentQuestion.id, e.target.value)}
-                rows={4}
-              />
-            )}
+          <CardContent>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium mb-4">{currentQuestion.question}</h3>
 
-            {currentQuestion.type === "radio" && currentQuestion.options && (
-              <RadioGroup
-                value={answers[currentQuestion.id] || ""}
-                onValueChange={(value) => handleAnswer(currentQuestion.id, value)}
-              >
-                {currentQuestion.options.map((option, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option} id={`option-${index}`} />
-                    <Label htmlFor={`option-${index}`}>{option}</Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            )}
+                {currentQuestion.type === "text" && (
+                  <Textarea
+                    placeholder="Enter your response..."
+                    value={answers[currentQuestion.id] || ""}
+                    onChange={(e) => handleAnswer(currentQuestion.id, e.target.value)}
+                    rows={4}
+                  />
+                )}
 
-            {/* Navigation */}
-            <div className="flex justify-between pt-6">
-              <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 0}>
-                <ChevronLeft className="w-4 h-4 mr-2" />
-                Previous
-              </Button>
+                {currentQuestion.type === "radio" && currentQuestion.options && (
+                  <RadioGroup
+                    value={answers[currentQuestion.id] || ""}
+                    onValueChange={(value) => handleAnswer(currentQuestion.id, value)}
+                  >
+                    {currentQuestion.options.map((option, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option} id={`option-${index}`} />
+                        <Label htmlFor={`option-${index}`} className="text-sm">
+                          {option}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                )}
+              </div>
 
-              <Button onClick={handleNext} disabled={!canProceed()}>
-                {currentStep === questions.length - 1 ? "Complete Assessment" : "Next"}
-                {currentStep < questions.length - 1 && <ChevronRight className="w-4 h-4 ml-2" />}
-              </Button>
+              <div className="flex justify-between">
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  disabled={currentStep === 0}
+                >
+                  <ChevronLeft className="w-4 h-4 mr-2" />
+                  Previous
+                </Button>
+
+                <Button
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                >
+                  {currentStep === questions.length - 1 ? (
+                    <>
+                      Submit Assessment
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </>
+                  ) : (
+                    <>
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

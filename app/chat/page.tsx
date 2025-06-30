@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import Navigation from "@/components/navigation"
+import { useAuth } from "@/lib/auth"
 
 interface Message {
   id: string
@@ -33,6 +34,7 @@ export default function ChatPage() {
   const [inputMessage, setInputMessage] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const { user } = useAuth()
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -61,19 +63,47 @@ export default function ChatPage() {
     setInputMessage("")
     setIsTyping(true)
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: inputMessage,
+          userId: user?.id,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Chat failed')
+      }
+
+      const data = await response.json()
+      
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: "ai",
-        content: generateAIResponse(inputMessage),
+        content: data.response,
         timestamp: new Date(),
-        confidence: Math.floor(Math.random() * 20) + 80, // 80-100%
+        confidence: data.confidence,
       }
 
       setMessages((prev) => [...prev, aiResponse])
+    } catch (error) {
+      console.error('Chat error:', error)
+      // Fallback response if API fails
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "ai",
+        content: "I apologize, but I'm unable to process your request at the moment. Please try again or consult with a healthcare provider for immediate concerns.",
+        timestamp: new Date(),
+        confidence: 50,
+      }
+      setMessages((prev) => [...prev, aiResponse])
+    } finally {
       setIsTyping(false)
-    }, 2000)
+    }
   }
 
   const generateAIResponse = (userInput: string): string => {

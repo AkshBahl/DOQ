@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/lib/auth"
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -37,11 +38,16 @@ const navigationItems = [
 
 export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { user, signOut } = useAuth()
 
-  const handleLogout = () => {
-    // Handle logout logic here
+  const handleLogout = async () => {
+    await signOut()
     window.location.href = "/"
   }
+
+  const userName = user?.user_metadata?.first_name && user?.user_metadata?.last_name 
+    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+    : user?.email || 'User'
 
   return (
     <nav className="bg-white shadow-sm border-b">
@@ -89,7 +95,7 @@ export default function Navigation() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
                   <img src="/placeholder.svg?height=32&width=32" alt="Profile" className="w-8 h-8 rounded-full" />
-                  <span className="text-sm font-medium">John Doe</span>
+                  <span className="text-sm font-medium">{userName}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -144,8 +150,8 @@ export default function Navigation() {
               <div className="flex items-center px-3 py-2">
                 <img src="/placeholder.svg?height=40&width=40" alt="Profile" className="w-10 h-10 rounded-full" />
                 <div className="ml-3">
-                  <div className="text-base font-medium text-gray-800">John Doe</div>
-                  <div className="text-sm text-gray-500">john.doe@email.com</div>
+                  <div className="text-base font-medium text-gray-800">{userName}</div>
+                  <div className="text-sm text-gray-500">{user?.email || 'user@example.com'}</div>
                 </div>
               </div>
 

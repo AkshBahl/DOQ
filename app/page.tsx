@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useAuth } from "@/lib/auth"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -16,22 +19,28 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  
+  const { signIn } = useAuth()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
 
-    // Simulate API call
-    setTimeout(() => {
-      if (email === "demo@doq.com" && password === "demo123") {
-        // Redirect to dashboard
-        window.location.href = "/dashboard"
+    try {
+      const { error } = await signIn(email, password)
+      
+      if (error) {
+        setError(error.message)
       } else {
-        setError("Invalid email or password")
+        router.push("/dashboard")
       }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -98,10 +107,16 @@ export default function LoginPage() {
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
 
-              <div className="text-center">
+              <div className="text-center space-y-2">
                 <Button variant="link" className="text-sm">
                   Forgot your password?
                 </Button>
+                <div className="text-sm text-gray-600">
+                  Don't have an account?{" "}
+                  <Link href="/signup" className="text-blue-600 hover:underline font-medium">
+                    Sign up here
+                  </Link>
+                </div>
               </div>
             </form>
 
