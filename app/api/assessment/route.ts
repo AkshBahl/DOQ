@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { assessHealthSymptoms } from '@/lib/gemini'
-import { supabase } from '@/lib/supabase'
+import { supabase, supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,7 +33,10 @@ export async function POST(request: NextRequest) {
 
     // Save assessment to database if user is authenticated
     if (userId) {
-      const { error } = await supabase
+      if (!supabaseAdmin) {
+        return NextResponse.json({ error: 'Server configuration error: supabaseAdmin not available.' }, { status: 500 })
+      }
+      const { error } = await supabaseAdmin
         .from('assessments')
         .insert({
           user_id: userId,
@@ -49,6 +52,23 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         console.error('Database error:', error)
+      }
+
+      // Update health profile with latest assessment info
+      if (supabaseAdmin) {
+        console.log('Upserting health profile for user:', userId);
+        const { error: hpError, data: hpData } = await supabaseAdmin
+          .from('health_profiles')
+          .upsert({
+            user_id: userId,
+            last_assessment: new Date().toISOString(),
+            recent_symptoms: symptoms,
+            ai_recommendations: assessment.recommendations,
+          }, { onConflict: 'user_id' })
+        console.log('Upsert result:', hpData, hpError);
+        if (hpError) {
+          console.error('Health profile update error:', hpError)
+        }
       }
     }
 
