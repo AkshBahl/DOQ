@@ -11,6 +11,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    // Log the request to Gemini
+    console.log('Assessment request to Gemini:', { symptoms, painLevel, duration, medicationsTaken, additionalSymptoms })
+
     // Get AI assessment from Gemini
     const assessment = await assessHealthSymptoms({
       symptoms,
@@ -19,6 +22,14 @@ export async function POST(request: NextRequest) {
       medicationsTaken,
       additionalSymptoms,
     })
+
+    // Log the Gemini response
+    console.log('Gemini assessment response:', assessment)
+
+    // If the assessment is fallback (confidenceScore 50 or 70), return an error to the frontend
+    if (assessment.confidenceScore === 50 || assessment.confidenceScore === 70) {
+      return NextResponse.json({ error: 'Gemini AI failed to generate a real response.' }, { status: 500 })
+    }
 
     // Save assessment to database if user is authenticated
     if (userId) {
