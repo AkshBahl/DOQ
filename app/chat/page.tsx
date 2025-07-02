@@ -31,7 +31,7 @@ export default function ChatPage() {
     }
   }
 
-  // Get error from avatar component if any
+  // Get error from avatar component if any l
   useEffect(() => {
     if (avatarRef.current && avatarRef.current.error) {
       setError(avatarRef.current.error)
