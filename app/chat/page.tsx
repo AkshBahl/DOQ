@@ -5,17 +5,61 @@ import Navigation from "@/components/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import StreamingAvatarComponent from "@/components/StreamingAvatarComponent"
+import { Mic, MicOff } from "lucide-react"
 
 export default function ChatPage() {
   const avatarRef = useRef<any>(null)
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isListening, setIsListening] = useState(false)
+  const recognitionRef = useRef<any>(null)
 
   // Initialize avatar on mount
   useEffect(() => {
     avatarRef.current?.initialize()
   }, [])
+
+  // --- Speech-to-Text (STT) ---
+  const handleStartListening = () => {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      setError("Speech recognition is not supported in this browser.")
+      return
+    }
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'en-US'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setInputMessage(transcript)
+      setIsListening(false)
+    }
+    recognition.onerror = (event: any) => {
+      setError("Speech recognition error: " + event.error)
+      setIsListening(false)
+    }
+    recognition.onend = () => {
+      setIsListening(false)
+    }
+    recognitionRef.current = recognition
+    setIsListening(true)
+    recognition.start()
+  }
+  const handleStopListening = () => {
+    recognitionRef.current?.stop()
+    setIsListening(false)
+  }
+
+  // --- Text-to-Speech (TTS) ---
+  const speakText = (text: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new window.SpeechSynthesisUtterance(text)
+      utterance.lang = 'en-US'
+      window.speechSynthesis.speak(utterance)
+    }
+  }
 
   const handleSend = async () => {
     if (!avatarRef.current || !inputMessage.trim()) return
@@ -23,6 +67,8 @@ export default function ChatPage() {
     setError(null)
     try {
       await avatarRef.current.speak(inputMessage)
+      // Speak the AI's response aloud (simulate with inputMessage for now)
+      speakText(inputMessage)
       setInputMessage("")
     } catch (e) {
       setError("Failed to send message to avatar.")
@@ -49,18 +95,30 @@ export default function ChatPage() {
           </div>
           <div className="flex w-full gap-2 mt-2">
             <Input
-              placeholder="Type your message..."
+              placeholder="Type or speak your message..."
               value={inputMessage}
               onChange={e => setInputMessage(e.target.value)}
               onKeyDown={e => {
                 if (e.key === "Enter" && !e.shiftKey) handleSend()
               }}
-              disabled={isLoading || avatarRef.current?.isSpeaking}
+              disabled={isLoading || avatarRef.current?.isSpeaking || isListening}
             />
+            <Button
+              type="button"
+              onClick={isListening ? handleStopListening : handleStartListening}
+              variant={isListening ? "destructive" : "outline"}
+              disabled={isLoading || avatarRef.current?.isSpeaking}
+              aria-label={isListening ? "Stop listening" : "Start voice input"}
+            >
+              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </Button>
             <Button onClick={handleSend} disabled={!inputMessage.trim() || isLoading || avatarRef.current?.isSpeaking}>
               Send
             </Button>
           </div>
+          {isListening && (
+            <div className="text-blue-600 mt-2">Listening... Speak now!</div>
+          )}
           {error && (
             <div className="text-red-500 mt-4">{error}</div>
           )}

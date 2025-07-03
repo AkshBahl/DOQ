@@ -201,10 +201,6 @@ export default function Dashboard() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Welcome back, {getUserName()}!</h1>
           <p className="text-gray-600 mt-2">Here's your health dashboard overview</p>
-          {/* Debug info - remove in production */}
-          <div className="mt-2 text-xs text-gray-500">
-            User ID: {user.id} | Email: {getUserEmail()}
-          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
