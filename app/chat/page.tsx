@@ -31,10 +31,18 @@ export default function ChatPage() {
     recognition.lang = 'en-US'
     recognition.interimResults = false
     recognition.maxAlternatives = 1
-    recognition.onresult = (event: any) => {
+    recognition.onresult = async (event: any) => {
       const transcript = event.results[0][0].transcript
-      setInputMessage(transcript)
       setIsListening(false)
+      setIsLoading(true)
+      setError(null)
+      try {
+        await avatarRef.current.speak(transcript)
+      } catch (e) {
+        setError("Failed to send message to avatar.")
+      } finally {
+        setIsLoading(false)
+      }
     }
     recognition.onerror = (event: any) => {
       setError("Speech recognition error: " + event.error)
@@ -93,27 +101,16 @@ export default function ChatPage() {
           <div className="w-full h-80 mb-4">
             <StreamingAvatarComponent ref={avatarRef} />
           </div>
-          <div className="flex w-full gap-2 mt-2">
-            <Input
-              placeholder="Type or speak your message..."
-              value={inputMessage}
-              onChange={e => setInputMessage(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === "Enter" && !e.shiftKey) handleSend()
-              }}
-              disabled={isLoading || avatarRef.current?.isSpeaking || isListening}
-            />
+          <div className="flex w-full gap-2 mt-2 justify-center">
             <Button
               type="button"
               onClick={isListening ? handleStopListening : handleStartListening}
               variant={isListening ? "destructive" : "outline"}
               disabled={isLoading || avatarRef.current?.isSpeaking}
               aria-label={isListening ? "Stop listening" : "Start voice input"}
+              className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
             >
-              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-            </Button>
-            <Button onClick={handleSend} disabled={!inputMessage.trim() || isLoading || avatarRef.current?.isSpeaking}>
-              Send
+              {isListening ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
             </Button>
           </div>
           {isListening && (

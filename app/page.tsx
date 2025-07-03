@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Eye, EyeOff, Heart, Shield, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,7 +21,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   
-  const { signIn } = useAuth()
+  const { signIn, signInWithGoogle, user, loading } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,6 +120,92 @@ export default function LoginPage() {
     }
   }
 
+  // Handle Google OAuth or already-logged-in users
+  useEffect(() => {
+    const checkAndRedirect = async () => {
+      if (!loading && user) {
+        // Get the current user from Supabase Auth
+        const { data: authUser } = await supabase.auth.getUser()
+        const userId = authUser?.user?.id
+        let userData = null
+        let healthData = null
+        let userError = null
+        let healthError = null
+        if (userId) {
+          // Try to fetch user row
+          const userRes = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single()
+          userData = userRes.data
+          userError = userRes.error
+          // If user row does not exist, create it
+          if (userError && userError.code === 'PGRST116') {
+            const { user: u } = authUser
+            if (u) {
+              let insertRes: any = await supabase
+                .from('users')
+                .insert({
+                  id: u.id,
+                  email: u.email,
+                  first_name: u.user_metadata?.first_name || '',
+                  last_name: u.user_metadata?.last_name || '',
+                  subscription_tier: null,
+                })
+              if (!insertRes.error) {
+                userData = {
+                  id: u.id,
+                  email: u.email,
+                  first_name: u.user_metadata?.first_name || '',
+                  last_name: u.user_metadata?.last_name || '',
+                  subscription_tier: null,
+                }
+              }
+            }
+          }
+          // Try to fetch health profile row
+          const healthRes = await supabase
+            .from('health_profiles')
+            .select('*')
+            .eq('user_id', userId)
+            .single()
+          healthData = healthRes.data
+          healthError = healthRes.error
+          // If health profile row does not exist, treat as incomplete (do not error)
+          if (healthError && healthError.code === 'PGRST116') {
+            healthData = null
+          }
+        }
+        // Check required fields
+        const isProfileComplete = userData &&
+          userData.phone &&
+          userData.date_of_birth &&
+          userData.gender &&
+          userData.address &&
+          userData.emergency_contact &&
+          healthData &&
+          healthData.health_goals &&
+          userData.subscription_tier
+        if (!isProfileComplete) {
+          // If missing personal/health info, go to complete-profile
+          if (!userData?.phone || !userData?.date_of_birth || !userData?.gender || !userData?.address || !userData?.emergency_contact || !healthData?.health_goals) {
+            router.push("/complete-profile")
+            return
+          }
+          // If missing subscription, go to subscription
+          if (!userData?.subscription_tier) {
+            router.push("/subscription")
+            return
+          }
+        }
+        // All complete, go to dashboard
+        router.push("/dashboard")
+      }
+    }
+    checkAndRedirect()
+  }, [user, loading, router])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -138,6 +224,22 @@ export default function LoginPage() {
             <CardDescription>Enter your credentials to access your health dashboard</CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Google Sign In Button */}
+            <Button
+              type="button"
+              className="w-full mb-4"
+              variant="outline"
+              disabled={isLoading}
+              onClick={async () => {
+                setIsLoading(true)
+                setError("")
+                const { error } = await signInWithGoogle()
+                if (error) setError(error.message)
+                setIsLoading(false)
+              }}
+            >
+              Sign in with Google
+            </Button>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
