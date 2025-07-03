@@ -239,7 +239,7 @@ export default function LoginPage() {
             {/* Google Sign In Button */}
             <Button
               type="button"
-              className="w-full mb-4"
+              className="w-full mb-4 flex items-center justify-center gap-2"
               variant="outline"
               disabled={isLoading}
               onClick={async () => {
@@ -250,6 +250,17 @@ export default function LoginPage() {
                 setIsLoading(false)
               }}
             >
+              <span className="inline-block w-5 h-5 mr-2 align-middle">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20">
+                  <g>
+                    <path fill="#4285F4" d="M24 9.5c3.54 0 6.04 1.53 7.43 2.81l5.48-5.48C33.64 3.54 29.36 1.5 24 1.5 14.98 1.5 7.13 7.44 3.88 15.09l6.77 5.26C12.13 14.09 17.56 9.5 24 9.5z"/>
+                    <path fill="#34A853" d="M46.1 24.5c0-1.64-.15-3.22-.43-4.74H24v9.24h12.43c-.54 2.9-2.18 5.36-4.65 7.04l7.18 5.59C43.87 37.91 46.1 31.74 46.1 24.5z"/>
+                    <path fill="#FBBC05" d="M10.65 28.35c-1.01-2.99-1.01-6.21 0-9.2l-6.77-5.26C1.64 17.36 0 20.53 0 24c0 3.47 1.64 6.64 3.88 9.11l6.77-5.26z"/>
+                    <path fill="#EA4335" d="M24 46.5c6.48 0 11.92-2.15 15.9-5.86l-7.18-5.59c-2.01 1.35-4.6 2.15-8.72 2.15-6.44 0-11.87-4.59-13.35-10.74l-6.77 5.26C7.13 40.56 14.98 46.5 24 46.5z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                  </g>
+                </svg>
+              </span>
               Sign in with Google
             </Button>
             <form onSubmit={handleSubmit} className="space-y-4">
