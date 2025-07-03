@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { supabase } from "@/lib/supabase"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -30,10 +31,86 @@ export default function LoginPage() {
 
     try {
       const { error } = await signIn(email, password)
-      
       if (error) {
         setError(error.message)
       } else {
+        // After sign in, check profile completion
+        // Get the current user from Supabase Auth
+        const { data: authUser } = await supabase.auth.getUser()
+        const userId = authUser?.user?.id
+        let userData = null
+        let healthData = null
+        let userError = null
+        let healthError = null
+        if (userId) {
+          // Try to fetch user row
+          const userRes = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single()
+          userData = userRes.data
+          userError = userRes.error
+          // If user row does not exist, create it
+          if (userError && userError.code === 'PGRST116') {
+            const { user } = authUser
+            if (user) {
+              let insertRes: any = await supabase
+                .from('users')
+                .insert({
+                  id: user.id,
+                  email: user.email,
+                  first_name: user.user_metadata?.first_name || '',
+                  last_name: user.user_metadata?.last_name || '',
+                  subscription_tier: null,
+                })
+              if (!insertRes.error) {
+                userData = {
+                  id: user.id,
+                  email: user.email,
+                  first_name: user.user_metadata?.first_name || '',
+                  last_name: user.user_metadata?.last_name || '',
+                  subscription_tier: null,
+                }
+              }
+            }
+          }
+          // Try to fetch health profile row
+          const healthRes = await supabase
+            .from('health_profiles')
+            .select('*')
+            .eq('user_id', userId)
+            .single()
+          healthData = healthRes.data
+          healthError = healthRes.error
+          // If health profile row does not exist, treat as incomplete (do not error)
+          if (healthError && healthError.code === 'PGRST116') {
+            healthData = null
+          }
+        }
+        // Check required fields
+        const isProfileComplete = userData &&
+          userData.phone &&
+          userData.date_of_birth &&
+          userData.gender &&
+          userData.address &&
+          userData.emergency_contact &&
+          healthData &&
+          healthData.health_goals &&
+          userData.subscription_tier
+        if (!isProfileComplete) {
+          // If missing personal/health info, go to complete-profile
+          if (!userData?.phone || !userData?.date_of_birth || !userData?.gender || !userData?.address || !userData?.emergency_contact || !healthData?.health_goals) {
+            router.push("/complete-profile")
+            return
+          }
+          // If missing subscription, go to subscription
+          if (!userData?.subscription_tier) {
+            router.push("/subscription")
+            return
+          }
+        }
+        // All complete, go to dashboard
         router.push("/dashboard")
       }
     } catch (err) {
