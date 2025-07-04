@@ -40,11 +40,13 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
   const initialize = async () => {
     setError(null);
     setIsReady(false);
+
     const token = await fetchAccessToken();
     if (!token) {
       alert("Failed to fetch HeyGen token. Please try again later or contact support.");
       return;
     }
+
     const avatarInstance = new StreamingAvatar({ token });
     setAvatar(avatarInstance);
 
@@ -53,6 +55,7 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
         videoRef.current.srcObject = event.detail.stream || event.detail;
         videoRef.current.play();
         setIsReady(true);
+        startVoiceChatInternal();
       }
     });
 
@@ -74,13 +77,39 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
       setVoiceStatus("Waiting for you to speak...");
     });
 
-    await avatarInstance.createStartAvatar({
-      quality: AvatarQuality.High,
-      avatarName: props.avatarName || DEFAULT_AVATAR_NAME,
-      language: props.language || "en",
-      disableIdleTimeout: true,
-    });
+    // Retry logic for createStartAvatar
+    let attempt = 0;
+    const maxAttempts = 3;
+    while (attempt < maxAttempts) {
+      try {
+        attempt++;
+        await avatarInstance.createStartAvatar({
+          quality: AvatarQuality.High,
+          avatarName: props.avatarName || DEFAULT_AVATAR_NAME,
+          language: props.language || "en",
+          disableIdleTimeout: true,
+        });
+        break;
+      } catch (err) {
+        if (attempt >= maxAttempts) {
+          setError(`Failed to create avatar after ${maxAttempts} attempts: ${err}`);
+        } else {
+          await new Promise(res => setTimeout(res, 5000));
+        }
+      }
+    }
   };
+
+  // Helper to start voice chat and log errors
+  async function startVoiceChatInternal() {
+    if (!avatar) return;
+    try {
+      await avatar.startVoiceChat();
+      setVoiceStatus("Waiting for you to speak...");
+    } catch (error) {
+      setVoiceStatus("Error starting voice chat");
+    }
+  }
 
   // Speak with 1 retry if first call fails
   const speak = async (text: string): Promise<{ duration_ms?: number; task_id?: string }> => {
@@ -94,7 +123,6 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
         });
         return result; // contains { duration_ms, task_id }
       } catch (err) {
-        console.error("Avatar speak error:", err);
         return null;
       }
     };
@@ -112,8 +140,6 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
     if (avatar) {
       try {
         await avatar.interrupt();
-      } catch (err) {
-        console.error("Error while interrupting avatar:", err);
       } finally {
         setIsSpeaking(false);
       }
@@ -123,7 +149,7 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
   const startVoiceChat = async () => {
     if (!avatar) return;
     try {
-      await avatar.startVoiceChat({ useSilencePrompt: false });
+      await avatar.startVoiceChat();
       setVoiceStatus("Waiting for you to speak...");
     } catch (error) {
       setVoiceStatus("Error starting voice chat");
@@ -147,7 +173,7 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
     isSpeaking,
     isReady,
     error,
-    startVoiceChat,
+    startVoiceChat: startVoiceChatInternal,
     closeVoiceChat,
     voiceStatus,
   }));
