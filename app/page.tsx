@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -20,6 +21,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showReset, setShowReset] = useState(false)
+  const [resetEmail, setResetEmail] = useState("")
+  const [resetStatus, setResetStatus] = useState<string | null>(null)
   
   const { signIn, signInWithGoogle, user, loading } = useAuth()
   const router = useRouter()
@@ -117,6 +121,23 @@ export default function LoginPage() {
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setResetStatus(null)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: typeof window !== 'undefined' ? window.location.origin + '/reset-password' : undefined,
+      })
+      if (error) {
+        setResetStatus("Error: " + error.message)
+      } else {
+        setResetStatus("Password reset email sent! Please check your inbox.")
+      }
+    } catch (err) {
+      setResetStatus("An unexpected error occurred. Please try again.")
     }
   }
 
@@ -310,9 +331,34 @@ export default function LoginPage() {
               </Button>
 
               <div className="text-center space-y-2">
-                <Button variant="link" className="text-sm">
-                  Forgot your password?
-                </Button>
+                <Dialog open={showReset} onOpenChange={setShowReset}>
+                  <DialogTrigger asChild>
+                    <Button variant="link" className="text-sm" type="button">
+                      Forgot your password?
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Reset Password</DialogTitle>
+                      <DialogDescription>
+                        Enter your email address and we'll send you a password reset link.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handlePasswordReset} className="space-y-4">
+                      <Input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={resetEmail}
+                        onChange={e => setResetEmail(e.target.value)}
+                        required
+                      />
+                      <DialogFooter>
+                        <Button type="submit" className="w-full">Send Reset Link</Button>
+                      </DialogFooter>
+                    </form>
+                    {resetStatus && <div className="text-center text-sm mt-2 text-blue-600">{resetStatus}</div>}
+                  </DialogContent>
+                </Dialog>
                 <div className="text-sm text-gray-600">
                   Don't have an account?{" "}
                   <Link href="/signup" className="text-blue-600 hover:underline font-medium">
