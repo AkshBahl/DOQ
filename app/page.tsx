@@ -240,71 +240,78 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-2 sm:p-4">
       <div className="w-full max-w-md">
-        {/* Logo and Branding */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-            <Heart className="w-8 h-8 text-white" />
+        {/* Header */}
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-blue-600 rounded-full mb-3 sm:mb-4">
+            <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">DOQ</h1>
-          <p className="text-gray-600">Doctor Q - Your Health Companion</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome to DOQ</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">Your AI-powered health companion</p>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access your health dashboard</CardDescription>
+        <Card className="shadow-lg">
+          <CardHeader className="pb-4 sm:pb-6">
+            <CardTitle className="text-lg sm:text-xl">Sign In</CardTitle>
           </CardHeader>
-          <CardContent>
-            {/* Google Sign In Button */}
-            <Button
-              type="button"
-              className="w-full mb-4 flex items-center justify-center gap-2"
-              variant="outline"
-              disabled={isLoading}
-              onClick={async () => {
-                setIsLoading(true)
-                setError("")
-                const { error } = await signInWithGoogle()
-                if (error) setError(error.message)
-                setIsLoading(false)
-              }}
-            >
-              <span className="inline-block w-5 h-5 mr-2 align-middle">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20">
-                  <g>
-                    <path fill="#4285F4" d="M24 9.5c3.54 0 6.04 1.53 7.43 2.81l5.48-5.48C33.64 3.54 29.36 1.5 24 1.5 14.98 1.5 7.13 7.44 3.88 15.09l6.77 5.26C12.13 14.09 17.56 9.5 24 9.5z"/>
-                    <path fill="#34A853" d="M46.1 24.5c0-1.64-.15-3.22-.43-4.74H24v9.24h12.43c-.54 2.9-2.18 5.36-4.65 7.04l7.18 5.59C43.87 37.91 46.1 31.74 46.1 24.5z"/>
-                    <path fill="#FBBC05" d="M10.65 28.35c-1.01-2.99-1.01-6.21 0-9.2l-6.77-5.26C1.64 17.36 0 20.53 0 24c0 3.47 1.64 6.64 3.88 9.11l6.77-5.26z"/>
-                    <path fill="#EA4335" d="M24 46.5c6.48 0 11.92-2.15 15.9-5.86l-7.18-5.59c-2.01 1.35-4.6 2.15-8.72 2.15-6.44 0-11.87-4.59-13.35-10.74l-6.77 5.26C7.13 40.56 14.98 46.5 24 46.5z"/>
-                    <path fill="none" d="M0 0h48v48H0z"/>
-                  </g>
-                </svg>
-              </span>
-              Sign in with Google
-            </Button>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+          <CardContent className="space-y-4 sm:space-y-6">
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription className="text-sm">{error}</AlertDescription>
+              </Alert>
+            )}
+            <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
+              {/* Google Sign In Button */}
+              <Button
+                type="button"
+                className="w-full mb-4 flex items-center justify-center gap-2"
+                variant="outline"
+                disabled={isLoading}
+                onClick={async () => {
+                  setIsLoading(true)
+                  setError("")
+                  const { error } = await signInWithGoogle()
+                  if (error) setError(error.message)
+                  setIsLoading(false)
+                }}
+              >
+                <span className="inline-block w-5 h-5 mr-2 align-middle">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20">
+                    <g>
+                      <path fill="#4285F4" d="M24 9.5c3.54 0 6.04 1.53 7.43 2.81l5.48-5.48C33.64 3.54 29.36 1.5 24 1.5 14.98 1.5 7.13 7.44 3.88 15.09l6.77 5.26C12.13 14.09 17.56 9.5 24 9.5z"/>
+                      <path fill="#34A853" d="M46.1 24.5c0-1.64-.15-3.22-.43-4.74H24v9.24h12.43c-.54 2.9-2.18 5.36-4.65 7.04l7.18 5.59C43.87 37.91 46.1 31.74 46.1 24.5z"/>
+                      <path fill="#FBBC05" d="M10.65 28.35c-1.01-2.99-1.01-6.21 0-9.2l-6.77-5.26C1.64 17.36 0 20.53 0 24c0 3.47 1.64 6.64 3.88 9.11l6.77-5.26z"/>
+                      <path fill="#EA4335" d="M24 46.5c6.48 0 11.92-2.15 15.9-5.86l-7.18-5.59c-2.01 1.35-4.6 2.15-8.72 2.15-6.44 0-11.87-4.59-13.35-10.74l-6.77 5.26C7.13 40.56 14.98 46.5 24 46.5z"/>
+                      <path fill="none" d="M0 0h48v48H0z"/>
+                    </g>
+                  </svg>
+                </span>
+                Sign in with Google
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-gray-500">Or continue with</span>
+                </div>
+              </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm sm:text-base">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="w-full text-sm sm:text-base"
                   required
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-sm sm:text-base">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -312,61 +319,39 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pr-10 text-sm sm:text-base"
                     required
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-2 sm:px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
-
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+              <Button type="submit" className="w-full text-sm sm:text-base" disabled={isLoading}>
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
-
-              <div className="text-center space-y-2">
-                <Dialog open={showReset} onOpenChange={setShowReset}>
-                  <DialogTrigger asChild>
-                    <Button variant="link" className="text-sm" type="button">
-                      Forgot your password?
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Reset Password</DialogTitle>
-                      <DialogDescription>
-                        Enter your email address and we'll send you a password reset link.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handlePasswordReset} className="space-y-4">
-                      <Input
-                        type="email"
-                        placeholder="Enter your email"
-                        value={resetEmail}
-                        onChange={e => setResetEmail(e.target.value)}
-                        required
-                      />
-                      <DialogFooter>
-                        <Button type="submit" className="w-full">Send Reset Link</Button>
-                      </DialogFooter>
-                    </form>
-                    {resetStatus && <div className="text-center text-sm mt-2 text-blue-600">{resetStatus}</div>}
-                  </DialogContent>
-                </Dialog>
-                <div className="text-sm text-gray-600">
+            </form>
+            <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t">
+              <div className="text-center">
+                <Button variant="link" className="text-sm sm:text-base" onClick={() => setShowReset(true)}>
+                  Forgot your password?
+                </Button>
+              </div>
+              <div className="text-center">
+                <p className="text-sm sm:text-base text-gray-600">
                   Don't have an account?{" "}
                   <Link href="/signup" className="text-blue-600 hover:underline font-medium">
                     Sign up here
                   </Link>
-                </div>
+                </p>
               </div>
-            </form>
+            </div>
           </CardContent>
         </Card>
 

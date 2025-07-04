@@ -74,49 +74,49 @@ export default function CompleteProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-2 sm:p-4">
       <div className="w-full max-w-2xl">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Complete Your Profile</h1>
-          <p className="text-gray-600">Tell us more about yourself to personalize your experience</p>
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Complete Your Profile</h1>
+          <p className="text-sm sm:text-base text-gray-600">Tell us more about yourself to personalize your experience</p>
         </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Personal & Health Information</CardTitle>
+        <Card className="shadow-lg">
+          <CardHeader className="pb-4 sm:pb-6">
+            <CardTitle className="text-lg sm:text-xl">Personal & Health Information</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4 sm:space-y-6">
             {error && (
               <Alert variant="destructive" className="mb-4">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription className="text-sm">{error}</AlertDescription>
               </Alert>
             )}
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
               {/* Personal Details */}
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Label htmlFor="phone" className="text-sm sm:text-base">Phone Number *</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="phone"
                       type="tel"
                       placeholder="Enter your phone number"
-                      className="pl-10"
+                      className="pl-10 w-full text-sm sm:text-base"
                       value={formData.phone}
                       onChange={(e) => handleInputChange("phone", e.target.value)}
                       required
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                    <Label htmlFor="dateOfBirth" className="text-sm sm:text-base">Date of Birth *</Label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="dateOfBirth"
                         type="date"
-                        className="pl-10"
+                        className="pl-10 w-full text-sm sm:text-base"
                         value={formData.dateOfBirth}
                         onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
                         required
@@ -124,9 +124,9 @@ export default function CompleteProfilePage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="gender">Gender *</Label>
+                    <Label htmlFor="gender" className="text-sm sm:text-base">Gender *</Label>
                     <Select value={formData.gender} onValueChange={(value) => handleInputChange("gender", value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full text-sm sm:text-base">
                         <SelectValue placeholder="Select your gender" />
                       </SelectTrigger>
                       <SelectContent>
@@ -139,13 +139,13 @@ export default function CompleteProfilePage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="address">Address *</Label>
+                  <Label htmlFor="address" className="text-sm sm:text-base">Address *</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="address"
                       placeholder="Enter your full address"
-                      className="pl-10"
+                      className="pl-10 w-full text-sm sm:text-base"
                       value={formData.address}
                       onChange={(e) => handleInputChange("address", e.target.value)}
                       required
@@ -153,63 +153,70 @@ export default function CompleteProfilePage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="emergencyContact">Emergency Contact *</Label>
+                  <Label htmlFor="emergencyContact" className="text-sm sm:text-base">Emergency Contact *</Label>
                   <Input
                     id="emergencyContact"
                     placeholder="Name - Phone Number (e.g., John Doe - +1 555-123-4567)"
                     value={formData.emergencyContact}
                     onChange={(e) => handleInputChange("emergencyContact", e.target.value)}
+                    className="w-full text-sm sm:text-base"
                     required
                   />
                 </div>
               </div>
               {/* Health Information */}
-              <div className="space-y-4 pt-4">
+              <div className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="allergies">Allergies</Label>
+                  <Label htmlFor="allergies" className="text-sm sm:text-base">Allergies</Label>
                   <Textarea
                     id="allergies"
                     placeholder="List any allergies (e.g., medications, foods, environmental)"
                     value={formData.allergies}
                     onChange={(e) => handleInputChange("allergies", e.target.value)}
                     rows={3}
+                    className="w-full text-sm sm:text-base"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="currentMedications">Current Medications</Label>
+                  <Label htmlFor="currentMedications" className="text-sm sm:text-base">Current Medications</Label>
                   <Textarea
                     id="currentMedications"
                     placeholder="List any medications you're currently taking"
                     value={formData.currentMedications}
                     onChange={(e) => handleInputChange("currentMedications", e.target.value)}
                     rows={3}
+                    className="w-full text-sm sm:text-base"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="medicalConditions">Medical Conditions</Label>
+                  <Label htmlFor="medicalConditions" className="text-sm sm:text-base">Medical Conditions</Label>
                   <Textarea
                     id="medicalConditions"
                     placeholder="List any medical conditions or health issues"
                     value={formData.medicalConditions}
                     onChange={(e) => handleInputChange("medicalConditions", e.target.value)}
                     rows={3}
+                    className="w-full text-sm sm:text-base"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="healthGoals">Health Goals *</Label>
+                  <Label htmlFor="healthGoals" className="text-sm sm:text-base">Health Goals *</Label>
                   <Textarea
                     id="healthGoals"
-                    placeholder="What are your health goals? (e.g., lose weight, manage blood pressure, improve fitness)"
+                    placeholder="What are your main health goals? (e.g., lose weight, manage stress, improve fitness)"
                     value={formData.healthGoals}
                     onChange={(e) => handleInputChange("healthGoals", e.target.value)}
                     rows={3}
+                    className="w-full text-sm sm:text-base"
                     required
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Continue"}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-3 sm:pt-4">
+                <Button type="submit" className="w-full sm:w-auto text-sm sm:text-base" disabled={isLoading}>
+                  {isLoading ? "Saving..." : "Complete Profile"}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

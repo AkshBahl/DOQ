@@ -166,16 +166,16 @@ export default function AssessmentPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-2xl lg:max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" />
               Assessment Complete
             </h1>
-            <p className="text-gray-600 mt-2">Based on your symptoms, here are our AI-generated recommendations</p>
+            <p className="text-gray-600 mt-2 text-sm sm:text-base">Based on your symptoms, here are our AI-generated recommendations</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Urgency Level */}
             <Card>
               <CardHeader>

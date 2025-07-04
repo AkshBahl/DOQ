@@ -196,20 +196,20 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <Navigation />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {getUserName()}!</h1>
-          <p className="text-gray-600 mt-2">Here's your health dashboard overview</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back, {getUserName()}!</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-2">Here's your health dashboard overview</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Profile Summary */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
+                  <User className="w-4 h-4 sm:w-5 sm:h-5" />
                   Profile Summary
                 </CardTitle>
               </CardHeader>
@@ -286,7 +286,7 @@ export default function Dashboard() {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Quick Actions */}
             <Card>
               <CardHeader>
@@ -294,20 +294,20 @@ export default function Dashboard() {
                 <CardDescription>Access your most used features</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {quickActions.map((action, index) => (
                     <Button
                       key={index}
                       variant="outline"
-                      className="h-auto p-4 justify-start bg-transparent"
+                      className="h-auto p-3 sm:p-4 justify-start bg-transparent"
                       onClick={() => (window.location.href = action.href)}
                     >
-                      <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center mr-3`}>
-                        <action.icon className="w-5 h-5 text-white" />
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${action.color} flex items-center justify-center mr-3`}>
+                        <action.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </div>
                       <div className="text-left">
-                        <div className="font-semibold">{action.title}</div>
-                        <div className="text-sm text-gray-600">{action.description}</div>
+                        <div className="font-semibold text-sm sm:text-base">{action.title}</div>
+                        <div className="text-xs sm:text-sm text-gray-600">{action.description}</div>
                       </div>
                     </Button>
                   ))}
@@ -319,12 +319,12 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
                   Recent Activity
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {recentActivity.map((activity, index) => (
                     <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -342,7 +342,7 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                   Upcoming
                 </CardTitle>
               </CardHeader>
@@ -350,17 +350,17 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                     <div>
-                      <p className="font-medium">Monthly Health Check</p>
-                      <p className="text-sm text-gray-600">Tomorrow at 2:00 PM</p>
+                      <p className="font-medium text-sm sm:text-base">Monthly Health Check</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Tomorrow at 2:00 PM</p>
                     </div>
-                    <Button size="sm">View</Button>
+                    <Button size="sm" className="text-xs sm:text-sm">View</Button>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                     <div>
-                      <p className="font-medium">Medication Reminder</p>
-                      <p className="text-sm text-gray-600">Daily at 8:00 AM</p>
+                      <p className="font-medium text-sm sm:text-base">Medication Reminder</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Daily at 8:00 AM</p>
                     </div>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" className="text-xs sm:text-sm">
                       Manage
                     </Button>
                   </div>

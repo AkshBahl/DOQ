@@ -112,24 +112,24 @@ export default function SubscriptionPage() {
     <div className="min-h-screen bg-gray-50">
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Health Plan</h1>
-          <p className="text-xl text-gray-600 mb-8">
+      <main className="max-w-6xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">Choose Your Health Plan</h1>
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8">
             Get the care and insights you need with our flexible subscription options
           </p>
 
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-8">
+          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
             <span className={`text-sm ${!isYearly ? "font-semibold" : "text-gray-600"}`}>Monthly</span>
             <Switch checked={isYearly} onCheckedChange={setIsYearly} />
             <span className={`text-sm ${isYearly ? "font-semibold" : "text-gray-600"}`}>Yearly</span>
-            {isYearly && <Badge className="bg-green-100 text-green-800 ml-2">Save up to 17%</Badge>}
+            {isYearly && <Badge className="bg-green-100 text-green-800 ml-2 text-xs">Save up to 17%</Badge>}
           </div>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-12">
           {plans.map((plan) => {
             const IconComponent = plan.icon
             const price = getPrice(plan)
@@ -147,49 +147,49 @@ export default function SubscriptionPage() {
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-blue-600 text-white px-4 py-1">Most Popular</Badge>
+                  <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-blue-600 text-white px-3 sm:px-4 py-1 text-xs">Most Popular</Badge>
                   </div>
                 )}
 
                 {plan.current && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-green-600 text-white px-4 py-1">Current Plan</Badge>
+                  <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-green-600 text-white px-3 sm:px-4 py-1 text-xs">Current Plan</Badge>
                   </div>
                 )}
 
-                <CardHeader className="text-center pb-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <IconComponent className="w-6 h-6 text-blue-600" />
+                <CardHeader className="text-center pb-3 sm:pb-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                   </div>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <CardDescription className="text-gray-600">{plan.description}</CardDescription>
+                  <CardTitle className="text-xl sm:text-2xl">{plan.name}</CardTitle>
+                  <CardDescription className="text-sm sm:text-base text-gray-600">{plan.description}</CardDescription>
                 </CardHeader>
 
                 <CardContent>
-                  <div className="text-center mb-6">
-                    <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-center mb-4 sm:mb-6">
+                    <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
                       ${price}
                       {price > 0 && (
-                        <span className="text-lg font-normal text-gray-600">/{isYearly ? "year" : "month"}</span>
+                        <span className="text-base sm:text-lg font-normal text-gray-600">/{isYearly ? "year" : "month"}</span>
                       )}
                     </div>
                     {isYearly && savings > 0 && (
-                      <p className="text-sm text-green-600 font-medium">Save ${savings.toFixed(2)} per year</p>
+                      <p className="text-xs sm:text-sm text-green-600 font-medium">Save ${savings.toFixed(2)} per year</p>
                     )}
                   </div>
 
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                     {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-gray-700">{feature}</span>
+                      <li key={index} className="flex items-start gap-2 sm:gap-3">
+                        <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-gray-700">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
                   <Button
-                    className="w-full"
+                    className="w-full text-sm sm:text-base"
                     variant={plan.current ? "outline" : plan.popular ? "default" : "outline"}
                     disabled={plan.current || selectedPlan === plan.id}
                     onClick={() => handleSubscribe(plan.id)}
@@ -198,9 +198,7 @@ export default function SubscriptionPage() {
                       ? "Processing..."
                       : plan.current
                         ? "Current Plan"
-                        : plan.id === "free"
-                          ? "Downgrade to Free"
-                          : `Subscribe to ${plan.name}`}
+                        : "Choose Plan"}
                   </Button>
                 </CardContent>
               </Card>

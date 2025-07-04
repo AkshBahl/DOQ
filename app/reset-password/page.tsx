@@ -55,36 +55,36 @@ function ResetPasswordInner() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-white p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-white p-2 sm:p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-xl rounded-2xl border-0">
           <CardHeader className="flex flex-col items-center gap-2 pb-2">
-            <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-              <Lock className="w-7 h-7 text-blue-600" />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+              <Lock className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-center">Reset Your Password</CardTitle>
-            <p className="text-gray-600 text-center text-sm mt-1">Enter your new password below. Make sure it's strong and secure.</p>
+            <CardTitle className="text-xl sm:text-2xl font-bold text-center">Reset Your Password</CardTitle>
+            <p className="text-gray-600 text-center text-xs sm:text-sm mt-1">Enter your new password below. Make sure it's strong and secure.</p>
           </CardHeader>
           <CardContent>
             {success ? (
               <Alert variant="default" className="mb-4">
-                <AlertDescription>Password updated! Redirecting to sign in...</AlertDescription>
+                <AlertDescription className="text-sm">Password updated! Redirecting to sign in...</AlertDescription>
               </Alert>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5 mt-2">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 mt-2">
                 {error && (
                   <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription className="text-sm">{error}</AlertDescription>
                   </Alert>
                 )}
-                <div className="space-y-2">
+                <div className="space-y-2 sm:space-y-3">
                   <Input
                     type="password"
                     placeholder="New password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    className="text-base py-3"
+                    className="text-sm sm:text-base py-2 sm:py-3"
                   />
                   <Input
                     type="password"
@@ -92,11 +92,11 @@ function ResetPasswordInner() {
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     required
-                    className="text-base py-3"
+                    className="text-sm sm:text-base py-2 sm:py-3"
                   />
                   <div className="text-xs text-gray-500 mt-1 pl-1">Password must be at least 8 characters long.</div>
                 </div>
-                <Button type="submit" className="w-full text-base py-3 font-semibold rounded-lg shadow-sm" disabled={isLoading}>
+                <Button type="submit" className="w-full text-sm sm:text-base py-2 sm:py-3 font-semibold rounded-lg shadow-sm" disabled={isLoading}>
                   {isLoading ? "Updating..." : "Reset Password"}
                 </Button>
               </form>

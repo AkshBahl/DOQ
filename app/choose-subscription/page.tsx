@@ -120,24 +120,24 @@ export default function ChooseSubscriptionPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-white">
+    <div className="min-h-screen flex items-center justify-center p-2 sm:p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-white">
       <div className="w-full max-w-3xl">
         {/* Step Indicator */}
-        <div className="text-center mb-4">
-          <span className="inline-block bg-blue-100 text-blue-700 rounded-full px-4 py-1 text-xs font-semibold mb-2">Step 3 of 3</span>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Choose Your Health Plan</h1>
-          <p className="text-lg text-gray-600 mb-2">Get the care and insights you need with our flexible subscription options</p>
-          <p className="text-sm text-gray-500 mb-6">You can change your plan anytime from your dashboard.</p>
+        <div className="text-center mb-4 sm:mb-6">
+          <span className="inline-block bg-blue-100 text-blue-700 rounded-full px-3 sm:px-4 py-1 text-xs font-semibold mb-2">Step 3 of 3</span>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">Choose Your Health Plan</h1>
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-2">Get the care and insights you need with our flexible subscription options</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">You can change your plan anytime from your dashboard.</p>
         </div>
         {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-8">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
           <span className={`text-sm ${!isYearly ? "font-semibold" : "text-gray-600"}`}>Monthly</span>
           <Switch checked={isYearly} onCheckedChange={setIsYearly} />
           <span className={`text-sm ${isYearly ? "font-semibold" : "text-gray-600"}`}>Yearly</span>
-          {isYearly && <Badge className="bg-green-100 text-green-800 ml-2">Save up to 17%</Badge>}
+          {isYearly && <Badge className="bg-green-100 text-green-800 ml-2 text-xs">Save up to 17%</Badge>}
         </div>
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-12">
           {plans.map((plan) => {
             const IconComponent = plan.icon
             const price = getPrice(plan)
@@ -152,44 +152,44 @@ export default function ChooseSubscriptionPage() {
                 onClick={() => !isLoading && setSelectedPlan(plan.id)}
               >
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <Badge className="bg-blue-600 text-white px-4 py-1">Most Popular</Badge>
+                  <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <Badge className="bg-blue-600 text-white px-3 sm:px-4 py-1 text-xs">Most Popular</Badge>
                   </div>
                 )}
                 {isSelected && (
-                  <div className="absolute top-4 right-4 bg-blue-600 rounded-full p-1 z-10">
-                    <Check className="w-5 h-5 text-white" />
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-blue-600 rounded-full p-1 z-10">
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                 )}
-                <CardHeader className="text-center pb-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${isSelected ? "bg-blue-100" : "bg-gray-100"}`}>
-                    <IconComponent className={`w-6 h-6 ${isSelected ? "text-blue-600" : "text-blue-400"}`} />
+                <CardHeader className="text-center pb-3 sm:pb-4">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 ${isSelected ? "bg-blue-100" : "bg-gray-100"}`}>
+                    <IconComponent className={`w-5 h-5 sm:w-6 sm:h-6 ${isSelected ? "text-blue-600" : "text-blue-400"}`} />
                   </div>
-                  <CardTitle className="text-2xl font-semibold">{plan.name}</CardTitle>
-                  <CardDescription className="text-gray-600">{plan.description}</CardDescription>
+                  <CardTitle className="text-xl sm:text-2xl font-semibold">{plan.name}</CardTitle>
+                  <CardDescription className="text-sm sm:text-base text-gray-600">{plan.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center mb-6">
-                    <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-center mb-4 sm:mb-6">
+                    <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
                       ${price}
                       {price > 0 && (
-                        <span className="text-lg font-normal text-gray-600">/{isYearly ? "year" : "month"}</span>
+                        <span className="text-base sm:text-lg font-normal text-gray-600">/{isYearly ? "year" : "month"}</span>
                       )}
                     </div>
                     {isYearly && savings > 0 && (
-                      <p className="text-sm text-green-600 font-medium">Save ${savings.toFixed(2)} per year</p>
+                      <p className="text-xs sm:text-sm text-green-600 font-medium">Save ${savings.toFixed(2)} per year</p>
                     )}
                   </div>
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                     {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-gray-700">{feature}</span>
+                      <li key={index} className="flex items-start gap-2 sm:gap-3">
+                        <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-gray-700">{feature}</span>
                       </li>
                     ))}
                   </ul>
                   <Button
-                    className="w-full text-base py-3 font-semibold rounded-lg shadow-sm"
+                    className="w-full text-sm sm:text-base py-2 sm:py-3 font-semibold rounded-lg shadow-sm"
                     variant={isSelected ? "default" : "outline"}
                     disabled={isLoading || !isSelected}
                     onClick={() => handleSubscribe(plan.id)}
@@ -198,7 +198,7 @@ export default function ChooseSubscriptionPage() {
                       ? "Processing..."
                       : isSelected
                         ? "Continue with this Plan"
-                        : "Choose Plan"}
+                        : "Select Plan"}
                   </Button>
                 </CardContent>
               </Card>

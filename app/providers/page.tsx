@@ -171,7 +171,7 @@ export default function ProvidersPage() {
       )
     }
 
-    if (selectedSpecialty) {
+    if (selectedSpecialty && selectedSpecialty !== "all") {
       filtered = filtered.filter((provider) => provider.specialty === selectedSpecialty)
     }
 
@@ -207,255 +207,116 @@ export default function ProvidersPage() {
     <div className="min-h-screen bg-gray-50">
       <Navigation />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Stethoscope className="w-8 h-8" />
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Stethoscope className="w-6 h-6 sm:w-8 sm:h-8" />
             Find Healthcare Providers
           </h1>
-          <p className="text-gray-600 mt-2">Connect with qualified healthcare professionals in your area</p>
+          <p className="text-sm sm:text-base text-gray-600 mt-2">Connect with qualified healthcare professionals in your area</p>
         </div>
 
         {/* Search and Filters */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="w-5 h-5" />
-              Search & Filter
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="search">Search</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="search"
-                    placeholder="Doctor name or specialty"
-                    className="pl-10"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="specialty">Specialty</Label>
-                <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All specialties" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All specialties</SelectItem>
-                    {specialties.map((specialty) => (
-                      <SelectItem key={specialty} value={specialty}>
-                        {specialty}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="insurance">Insurance</Label>
-                <Select value={selectedInsurance} onValueChange={setSelectedInsurance}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All providers" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All providers</SelectItem>
-                    <SelectItem value="accepted">Accepts my insurance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-end">
-                <Button onClick={handleSearch} className="w-full">
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
-              </div>
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search providers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-full text-sm sm:text-base"
+              />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Results */}
-        {loadingClinics ? (
-          <div className="text-center py-10 text-gray-500">Loading nearby clinics...</div>
-        ) : clinics.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredClinics.map((clinic) => (
-              <Card key={clinic.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                    <Stethoscope className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">
-                      {clinic.tags?.name || "Unnamed Clinic"}
-                    </CardTitle>
-                    <div className="text-xs text-gray-500">
-                      {clinic.tags?.address || clinic.tags?.['addr:full'] || clinic.tags?.['addr:street'] || "Address not available"}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      <span>
-                        Lat: {clinic.lat.toFixed(4)}, Lon: {clinic.lon.toFixed(4)}
-                      </span>
-                    </div>
-                    {clinic.tags?.phone && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone className="w-4 h-4 text-gray-400" />
-                        <span>{clinic.tags.phone}</span>
-                      </div>
-                    )}
-                    {clinic.tags?.website && (
-                      <a
-                        href={clinic.tags.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline text-sm"
-                      >
-                        Website
-                      </a>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <div className="hidden">
+              <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
+                <SelectTrigger className="w-full text-sm sm:text-base">
+                  <SelectValue placeholder="All specialties" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All specialties</SelectItem>
+                  {specialties.map((specialty) => (
+                    <SelectItem key={specialty} value={specialty}>
+                      {specialty}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="hidden">
+              <Select value={selectedInsurance} onValueChange={setSelectedInsurance}>
+                <SelectTrigger className="w-full text-sm sm:text-base">
+                  <SelectValue placeholder="Insurance" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All providers</SelectItem>
+                  <SelectItem value="accepted">Accepts insurance</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={handleSearch} className="w-full text-sm sm:text-base">
+              <Filter className="w-4 h-4 mr-2" />
+              Search
+            </Button>
           </div>
-        ) : locationError ? (
-          <div className="text-center py-10 text-red-500">{locationError}</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProviders.map((provider) => (
-              <Card key={provider.id} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <img
-                      src={provider.image || "/placeholder.svg"}
-                      alt={provider.name}
-                      className="w-20 h-20 rounded-full object-cover"
-                    />
+        </div>
 
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="text-lg font-semibold">{provider.name}</h3>
-                          <p className="text-gray-600">{provider.specialty}</p>
-                        </div>
-                        <div className="text-right">
-                          <div className="flex items-center gap-1 mb-1">
-                            {renderStars(provider.rating)}
-                            <span className="text-sm font-medium ml-1">{provider.rating}</span>
-                          </div>
-                          <p className="text-xs text-gray-500">({provider.reviewCount} reviews)</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <MapPin className="w-4 h-4" />
-                          <span>
-                            {provider.distance} • {provider.address}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Phone className="w-4 h-4" />
-                          <span>{provider.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Calendar className="w-4 h-4" />
-                          <span>Next available: {provider.nextAvailable}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 mb-4">
-                        {provider.acceptsInsurance && (
-                          <Badge variant="secondary" className="bg-green-100 text-green-800">
-                            Accepts Insurance
-                          </Badge>
-                        )}
-                        {provider.languages.map((language) => (
-                          <Badge key={language} variant="outline" className="text-xs">
-                            {language}
-                          </Badge>
-                        ))}
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setSelectedProvider(provider)}>
-                              View Profile
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle className="flex items-center gap-3">
-                                <img
-                                  src={provider.image || "/placeholder.svg"}
-                                  alt={provider.name}
-                                  className="w-12 h-12 rounded-full"
-                                />
-                                <div>
-                                  <div>{provider.name}</div>
-                                  <div className="text-sm font-normal text-gray-600">{provider.specialty}</div>
-                                </div>
-                              </DialogTitle>
-                            </DialogHeader>
-
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <h4 className="font-semibold mb-2">Education</h4>
-                                  <p className="text-sm text-gray-600">{provider.education}</p>
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold mb-2">Experience</h4>
-                                  <p className="text-sm text-gray-600">{provider.experience}</p>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="font-semibold mb-2">Languages</h4>
-                                <div className="flex gap-2">
-                                  {provider.languages.map((language) => (
-                                    <Badge key={language} variant="outline">
-                                      {language}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="font-semibold mb-2">Contact Information</h4>
-                                <p className="text-sm text-gray-600 mb-1">{provider.address}</p>
-                                <p className="text-sm text-gray-600">{provider.phone}</p>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-
-                        <Button size="sm" onClick={() => handleBookAppointment(provider)}>
-                          <Calendar className="w-4 h-4 mr-2" />
-                          Book Appointment
-                        </Button>
-                      </div>
+        {/* Provider Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {filteredClinics.map((clinic) => (
+            <Card key={clinic.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                      <Stethoscope className="w-6 h-6 text-blue-600" />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                  <div className="min-w-0">
+                    <CardTitle className="text-base sm:text-lg truncate">{clinic.tags?.name || 'Unnamed Clinic'}</CardTitle>
+                    <p className="text-xs sm:text-sm text-gray-600 truncate">{clinic.tags?.['addr:full'] || clinic.tags?.address || clinic.tags?.['addr:street'] || 'Address not available'}</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-2 text-xs sm:text-sm">
+                  <MapPin className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-600 break-all">Lat: {clinic.lat?.toFixed(4)}, Lon: {clinic.lon?.toFixed(4)}</span>
+                </div>
+                {clinic.tags?.phone && (
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <Phone className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-600">{clinic.tags.phone}</span>
+                  </div>
+                )}
+                {clinic.tags?.website && (
+                  <a
+                    href={clinic.tags.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline text-xs sm:text-sm"
+                  >
+                    Website
+                  </a>
+                )}
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {clinic.tags?.phone && (
+                    <Button size="sm" className="w-full sm:w-auto text-xs sm:text-sm" asChild>
+                      <a href={`tel:${clinic.tags.phone}`}><Phone className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Call</a>
+                    </Button>
+                  )}
+                  {clinic.tags?.website && (
+                    <Button size="sm" variant="outline" className="w-full sm:w-auto text-xs sm:text-sm" asChild>
+                      <a href={clinic.tags.website} target="_blank" rel="noopener noreferrer"><Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Visit Website</a>
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-        {filteredProviders.length === 0 && (
+        {filteredClinics.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
               <Stethoscope className="w-12 h-12 text-gray-400 mx-auto mb-4" />

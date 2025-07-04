@@ -159,47 +159,47 @@ export default function HealthProfilePage() {
     <div className="min-h-screen bg-gray-50">
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Heart className="w-8 h-8" />
+      <main className="max-w-6xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Heart className="w-6 h-6 sm:w-8 sm:h-8" />
             Health Profile
           </h1>
-          <p className="text-gray-600 mt-2">Manage your medications, allergies, and medical conditions</p>
+          <p className="text-sm sm:text-base text-gray-600 mt-2">Manage your medications, allergies, and medical conditions</p>
         </div>
 
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Assessment History</h2>
-          <p className="text-gray-600">All your past AI-powered health assessments</p>
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Assessment History</h2>
+          <p className="text-sm sm:text-base text-gray-600">All your past AI-powered health assessments</p>
         </div>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {assessments.length === 0 && (
             <Card>
-              <CardContent className="py-8 text-center text-gray-500">
+              <CardContent className="py-6 sm:py-8 text-center text-gray-500">
                 No assessments found.
               </CardContent>
             </Card>
           )}
           {assessments.map((a) => (
             <Card key={a.id} className="border-blue-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" /> Assessment on {a.created_at ? new Date(a.created_at).toLocaleDateString() : "N/A"}
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" /> Assessment on {a.created_at ? new Date(a.created_at).toLocaleDateString() : "N/A"}
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm">
                   <span className="font-semibold">Symptoms:</span> {a.symptoms || "N/A"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div>
-                  <span className="font-semibold flex items-center gap-1">
-                    <FileText className="w-4 h-4" /> AI Recommendations:
+                  <span className="font-semibold flex items-center gap-1 text-sm sm:text-base">
+                    <FileText className="w-3 h-3 sm:w-4 sm:h-4" /> AI Recommendations:
                   </span>
-                  <div className="bg-gray-50 rounded p-3 mt-1 text-sm max-h-64 overflow-auto border">
+                  <div className="bg-gray-50 rounded p-2 sm:p-3 mt-1 text-xs sm:text-sm max-h-48 sm:max-h-64 overflow-auto border">
                     {a.recommendations ? (
                       <ReactMarkdown>{a.recommendations}</ReactMarkdown>
                     ) : (
-                      "N/A"
+                      "No recommendations available."
                     )}
                   </div>
                 </div>

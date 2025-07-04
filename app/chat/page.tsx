@@ -115,13 +115,13 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navigation />
-      <main className="flex-1 flex flex-col items-center justify-center py-8 px-2">
-        <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
-          <h2 className="text-xl font-bold mb-4">AI Doctor </h2>
-          <div className="w-full h-80 mb-4">
+      <main className="flex-1 flex flex-col items-center justify-center py-6 sm:py-8 px-2 sm:px-4 w-full">
+        <div className="w-full max-w-full sm:max-w-2xl bg-white rounded-lg shadow-lg p-4 sm:p-6 flex flex-col items-center">
+          <h2 className="text-lg sm:text-xl font-bold mb-4">AI Doctor </h2>
+          <div className="w-full h-60 sm:h-80 mb-4">
             <StreamingAvatarComponent ref={avatarRef} />
           </div>
-          <div className="chat-modes flex gap-2 mb-2" role="group">
+          <div className="chat-modes flex flex-col sm:flex-row gap-2 mb-2 w-full">
             <Button
               id="textModeBtn"
               className={currentMode === 'text' ? 'active' : ''}
@@ -136,17 +136,18 @@ export default function ChatPage() {
             >Voice Mode</Button>
           </div>
           {currentMode === 'text' && (
-            <div id="textModeControls" className="w-full flex gap-2 mt-2">
+            <div id="textModeControls" className="w-full flex flex-col sm:flex-row gap-2 mt-2">
               <Input
                 value={inputMessage}
                 onChange={e => setInputMessage(e.target.value)}
                 placeholder="Type your message..."
                 disabled={isLoading || avatarRef.current?.isSpeaking}
-                className="flex-1"
+                className="flex-1 min-w-0"
               />
               <Button
                 onClick={handleSend}
                 disabled={isLoading || !inputMessage.trim() || avatarRef.current?.isSpeaking}
+                className="w-full sm:w-auto"
               >Send</Button>
             </div>
           )}

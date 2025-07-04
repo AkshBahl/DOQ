@@ -189,130 +189,111 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50">
       <Navigation />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-4xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <User className="w-8 h-8" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <User className="w-7 h-7 sm:w-8 sm:h-8" />
             User Profile
           </h1>
-          <p className="text-gray-600 mt-2">Manage your personal information and health preferences</p>
+          <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your personal information and health preferences</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>Update your personal details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={profile.firstName}
-                    onChange={(e) => handleInputChange("firstName", e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={profile.lastName}
-                    onChange={(e) => handleInputChange("lastName", e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="firstName">First Name</Label>
+              <Input id="firstName" value={profile.firstName} onChange={e => handleInputChange('firstName', e.target.value)} className="w-full" />
+            </div>
+            <div>
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input id="lastName" value={profile.lastName} onChange={e => handleInputChange('lastName', e.target.value)} className="w-full" />
+            </div>
+          </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      className="pl-10"
-                      value={profile.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      required
-                      disabled
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      className="pl-10"
-                      value={profile.phone}
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="dateOfBirth"
-                      type="date"
-                      className="pl-10"
-                      value={profile.dateOfBirth}
-                      onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Gender</Label>
-                  <Select value={profile.gender} onValueChange={(value) => handleInputChange("gender", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                      <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="address"
-                    className="pl-10"
-                    value={profile.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="emergencyContact">Emergency Contact</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  id="emergencyContact"
-                  placeholder="Name - Phone Number"
-                  value={profile.emergencyContact}
-                  onChange={(e) => handleInputChange("emergencyContact", e.target.value)}
+                  id="email"
+                  type="email"
+                  className="pl-10 w-full"
+                  value={profile.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  required
+                  disabled
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            <div>
+              <Label htmlFor="phone">Phone</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  className="pl-10 w-full"
+                  value={profile.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="dateOfBirth">Date of Birth</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  className="pl-10 w-full"
+                  value={profile.dateOfBirth}
+                  onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="gender">Gender</Label>
+              <Select value={profile.gender} onValueChange={(value) => handleInputChange("gender", value)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="address">Address</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="address"
+                className="pl-10 w-full"
+                value={profile.address}
+                onChange={(e) => handleInputChange("address", e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="emergencyContact">Emergency Contact</Label>
+            <Input
+              id="emergencyContact"
+              placeholder="Name - Phone Number"
+              value={profile.emergencyContact}
+              onChange={(e) => handleInputChange("emergencyContact", e.target.value)}
+              className="w-full"
+            />
+          </div>
 
           {/* Health Information */}
           <Card>
@@ -329,6 +310,7 @@ export default function ProfilePage() {
                   value={profile.allergies}
                   onChange={(e) => handleInputChange("allergies", e.target.value)}
                   rows={3}
+                  className="w-full"
                 />
               </div>
 
@@ -340,6 +322,7 @@ export default function ProfilePage() {
                   value={profile.medications}
                   onChange={(e) => handleInputChange("medications", e.target.value)}
                   rows={3}
+                  className="w-full"
                 />
               </div>
 
@@ -351,6 +334,7 @@ export default function ProfilePage() {
                   value={profile.medicalConditions}
                   onChange={(e) => handleInputChange("medicalConditions", e.target.value)}
                   rows={3}
+                  className="w-full"
                 />
               </div>
 
@@ -362,14 +346,14 @@ export default function ProfilePage() {
                   value={profile.healthGoals}
                   onChange={(e) => handleInputChange("healthGoals", e.target.value)}
                   rows={3}
+                  className="w-full"
                 />
               </div>
             </CardContent>
           </Card>
 
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <Button type="submit" disabled={isLoading}>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button type="submit" className="w-full sm:w-auto" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
