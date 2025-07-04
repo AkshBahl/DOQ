@@ -131,7 +131,12 @@ export default function ProvidersPage() {
         const radius = 5000 // meters
         const query = `
           [out:json];
-          node["amenity"="clinic"](around:${radius},${latitude},${longitude});
+          (
+            node["amenity"="clinic"](around:${radius},${latitude},${longitude});
+            node["amenity"="doctors"](around:${radius},${latitude},${longitude});
+            node["amenity"="hospital"](around:${radius},${latitude},${longitude});
+            node["amenity"="pharmacy"](around:${radius},${latitude},${longitude});
+          );
           out;
         `
         try {
