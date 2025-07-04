@@ -20,6 +20,7 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [voiceStatus, setVoiceStatus] = useState<string>("");
 
   const fetchAccessToken = async (): Promise<string | null> => {
     try {
@@ -60,10 +61,23 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
       setIsReady(false);
     });
 
+    avatarInstance.on(StreamingEvents.USER_START, () => {
+      setVoiceStatus("Listening...");
+    });
+    avatarInstance.on(StreamingEvents.USER_STOP, () => {
+      setVoiceStatus("Processing...");
+    });
+    avatarInstance.on(StreamingEvents.AVATAR_START_TALKING, () => {
+      setVoiceStatus("Avatar is speaking...");
+    });
+    avatarInstance.on(StreamingEvents.AVATAR_STOP_TALKING, () => {
+      setVoiceStatus("Waiting for you to speak...");
+    });
+
     await avatarInstance.createStartAvatar({
       quality: AvatarQuality.High,
       avatarName: props.avatarName || DEFAULT_AVATAR_NAME,
-      language: props.language || "English",
+      language: props.language || "en",
       disableIdleTimeout: true,
     });
   };
@@ -106,6 +120,26 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
     }
   };
 
+  const startVoiceChat = async () => {
+    if (!avatar) return;
+    try {
+      await avatar.startVoiceChat({ useSilencePrompt: false });
+      setVoiceStatus("Waiting for you to speak...");
+    } catch (error) {
+      setVoiceStatus("Error starting voice chat");
+    }
+  };
+
+  const closeVoiceChat = async () => {
+    if (!avatar) return;
+    try {
+      await avatar.closeVoiceChat();
+      setVoiceStatus("");
+    } catch (error) {
+      setVoiceStatus("Error closing voice chat");
+    }
+  };
+
   useImperativeHandle(ref, () => ({
     initialize,
     speak, // returns { duration_ms, task_id }
@@ -113,6 +147,9 @@ const StreamingAvatarComponent = forwardRef((props: StreamingAvatarComponentProp
     isSpeaking,
     isReady,
     error,
+    startVoiceChat,
+    closeVoiceChat,
+    voiceStatus,
   }));
 
   return (

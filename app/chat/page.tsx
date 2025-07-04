@@ -14,11 +14,21 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null)
   const [isListening, setIsListening] = useState(false)
   const recognitionRef = useRef<any>(null)
+  const [currentMode, setCurrentMode] = useState<'text' | 'voice'>("text")
+  const [voiceStatus, setVoiceStatus] = useState("")
+  const [isAvatarReady, setIsAvatarReady] = useState(false)
 
   // Initialize avatar on mount
   useEffect(() => {
     avatarRef.current?.initialize()
   }, [])
+
+  useEffect(() => {
+    if (avatarRef.current) {
+      setIsAvatarReady(!!avatarRef.current.isReady)
+      setVoiceStatus(avatarRef.current.voiceStatus || "")
+    }
+  }, [avatarRef.current?.isReady, avatarRef.current?.voiceStatus])
 
   // --- Speech-to-Text (STT) ---
   const handleStartListening = () => {
@@ -92,6 +102,16 @@ export default function ChatPage() {
     }
   }, [avatarRef.current?.error])
 
+  const handleSwitchMode = async (mode: 'text' | 'voice') => {
+    if (currentMode === mode) return
+    setCurrentMode(mode)
+    if (mode === 'text') {
+      await avatarRef.current?.closeVoiceChat()
+    } else {
+      await avatarRef.current?.startVoiceChat()
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navigation />
@@ -101,20 +121,39 @@ export default function ChatPage() {
           <div className="w-full h-80 mb-4">
             <StreamingAvatarComponent ref={avatarRef} />
           </div>
-          <div className="flex w-full gap-2 mt-2 justify-center">
+          <div className="chat-modes flex gap-2 mb-2" role="group">
             <Button
-              type="button"
-              onClick={isListening ? handleStopListening : handleStartListening}
-              variant={isListening ? "destructive" : "outline"}
-              disabled={isLoading || avatarRef.current?.isSpeaking}
-              aria-label={isListening ? "Stop listening" : "Start voice input"}
-              className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
-            >
-              {isListening ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
-            </Button>
+              id="textModeBtn"
+              className={currentMode === 'text' ? 'active' : ''}
+              onClick={() => handleSwitchMode('text')}
+              disabled={currentMode === 'text'}
+            >Text Mode</Button>
+            <Button
+              id="voiceModeBtn"
+              className={currentMode === 'voice' ? 'active' : ''}
+              onClick={() => handleSwitchMode('voice')}
+              disabled={!isAvatarReady || currentMode === 'voice'}
+            >Voice Mode</Button>
           </div>
-          {isListening && (
-            <div className="text-blue-600 mt-2">Listening... Speak now!</div>
+          {currentMode === 'text' && (
+            <div id="textModeControls" className="w-full flex gap-2 mt-2">
+              <Input
+                value={inputMessage}
+                onChange={e => setInputMessage(e.target.value)}
+                placeholder="Type your message..."
+                disabled={isLoading || avatarRef.current?.isSpeaking}
+                className="flex-1"
+              />
+              <Button
+                onClick={handleSend}
+                disabled={isLoading || !inputMessage.trim() || avatarRef.current?.isSpeaking}
+              >Send</Button>
+            </div>
+          )}
+          {currentMode === 'voice' && (
+            <section id="voiceModeControls" role="group" className="w-full mt-2">
+              <div id="voiceStatus" className="text-blue-600">{voiceStatus}</div>
+            </section>
           )}
           {error && (
             <div className="text-red-500 mt-4">{error}</div>
